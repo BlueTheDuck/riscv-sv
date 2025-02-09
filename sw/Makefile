@@ -1,0 +1,34 @@
+ifeq ($(DOCKER),1)
+WRAPPER := docker run -it --user 1000:1000 --rm -v $(shell pwd):/opt/workdir rv32i:latest
+else
+WRAPPER :=
+endif
+TARGET := riscv32-unknown-elf
+
+CC := $(WRAPPER) $(TARGET)-gcc
+LD := $(WRAPPER) $(TARGET)-ld
+OBJCOPY := $(WRAPPER) $(TARGET)-objcopy
+OBJDUMP := $(WRAPPER) $(TARGET)-objdump
+
+C_FLAGS := -O0 -Xlinker "-Trv32.x" -nostartfiles -nostdlib -fpie -march=rv32id -mabi=ilp32d
+LD_FLAGS := -Trv32.x
+
+SRCS := $(wildcard *.c)
+OBJS := $(SRCS:.c=.o)
+
+%.o: %.c
+	$(CC) $(C_FLAGS) -c -o $@ $<
+
+main: $(OBJS)
+	$(LD) $^ $(LD_FLAGS) -o $@
+
+hexdump: main
+	$(OBJDUMP) -d $<
+.PHONY: hexdump
+
+%.bin: %
+	$(OBJCOPY) -Obinary $< $@
+
+clean:
+	rm main *.o
+.PHONY: clean
