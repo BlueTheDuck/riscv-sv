@@ -1,0 +1,74 @@
+import Types::*;
+
+module Decoder (
+    input word ir,
+    output int len,
+    output bit [6:0] opcode,
+    output bit [4:0] rd,
+    output bit [4:0] rs1,
+    output bit [4:0] rs2,
+    output word imm,
+    output bit [2:0] f3,
+    output bit [6:0] f7
+);
+  typedef enum {
+    NULL,
+    FORMAT_R,
+    FORMAT_I,
+    FORMAT_S,
+    FORMAT_B,
+    FORMAT_U,
+    FORMAT_J
+  } format_t;
+
+  bit signed [31:0] rtype_imm;
+  bit signed [31:0] itype_imm;
+  bit signed [31:0] stype_imm;
+  bit signed [31:0] btype_imm;
+  bit signed [31:0] utype_imm;
+  bit signed [31:0] jtype_imm;
+
+  assign rd = ir[11:7];
+  assign rs1 = ir[19:15];
+  assign rs2 = ir[24:20];
+  assign rtype_imm = 0;
+  assign itype_imm = {{20{ir[31]}}, ir[31:20]};
+  assign stype_imm = {{20{ir[31]}}, ir[31:25], ir[11:7]};
+  assign btype_imm = {{19{ir[31]}}, ir[31], ir[7], ir[30:25], ir[11:8], 1'b0};
+  assign utype_imm = {ir[31:12], 12'b0};
+  assign jtype_imm = {{12{ir[31]}}, ir[19:12], ir[20], ir[30:25], ir[24:21], 1'b0};
+  assign f3 = ir[14:12];
+  assign f7 = ir[31:25];
+
+  assign opcode = ir[6:0];
+  assign len = 4;
+
+  format_t format;
+  always_comb begin
+    case (opcode)
+      OP_ALU:    format = FORMAT_R;
+      OP_ALUI:   format = FORMAT_I;
+      OP_LOAD:   format = FORMAT_I;
+      OP_STORE:  format = FORMAT_S;
+      OP_BRANCH: format = FORMAT_B;
+      OP_JAL:    format = FORMAT_J;
+      OP_JALR:   format = FORMAT_I;
+      OP_LUI:    format = FORMAT_U;
+      OP_AUIPC:  format = FORMAT_U;
+      default:   format = NULL;
+    endcase
+    case (format)
+      FORMAT_R:  imm = rtype_imm;
+      FORMAT_I:  imm = itype_imm;
+      FORMAT_S:  imm = stype_imm;
+      FORMAT_B:  imm = btype_imm;
+      FORMAT_U:  imm = utype_imm;
+      FORMAT_J:  imm = jtype_imm;
+      default: imm = 0;
+    endcase
+
+    if (format == NULL) begin
+      $display("Unknown encoding for opcode: %b", opcode);
+    end
+  end
+endmodule
