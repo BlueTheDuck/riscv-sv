@@ -99,9 +99,26 @@ module ControlUnit (
       dbus_re: 0,
       en_comp_unit: 0
   };
-  localparam cu_t lui = null_cu;
-  localparam cu_t auipc = null_cu;
-
+  localparam cu_t lui = '{
+      alu_in_a: ALU_IN_A_REG,
+      alu_in_b: ALU_IN_B_IMM,
+      alu_mode: ALU_OP_FIXED_ADD,
+      dest_reg_from: DEST_REG_FROM_ALU,
+      pc_src: PC_SRC_NEXT_PC,
+      dbus_we: 0,
+      dbus_re: 0,
+      en_comp_unit: 0
+  };
+  localparam cu_t auipc = '{
+      alu_in_a: ALU_IN_A_PC,
+      alu_in_b: ALU_IN_B_IMM,
+      alu_mode: ALU_OP_FIXED_ADD,
+      dest_reg_from: DEST_REG_FROM_ALU,
+      pc_src: PC_SRC_NEXT_PC,
+      dbus_we: 0,
+      dbus_re: 0,
+      en_comp_unit: 0
+  };
 
 
   mstate_t state, next_state;
