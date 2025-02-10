@@ -23,8 +23,7 @@ module ControlUnit (
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_REG,
       alu_mode: ALU_OP_FROM_F3,
-      dest_reg_from: DEST_REG_FROM_ALU,
-      rb_store: 1'b0,
+      dest_reg_from: DEST_REG_FROM_NONE,
       pc_src: PC_SRC_NEXT_PC,
       pc_load: 0,
       dbus_we: 0,
@@ -35,7 +34,6 @@ module ControlUnit (
       alu_in_b: ALU_IN_B_IMM,
       alu_mode: ALU_OP_FROM_F3,
       dest_reg_from: DEST_REG_FROM_ALU,
-      rb_store: 1'b1,
       pc_src: PC_SRC_NEXT_PC,
       pc_load: 0,
       dbus_we: 0,
@@ -46,7 +44,6 @@ module ControlUnit (
       alu_in_b: ALU_IN_B_REG,
       alu_mode: ALU_OP_FROM_F3,
       dest_reg_from: DEST_REG_FROM_ALU,
-      rb_store: 1'b1,
       pc_src: PC_SRC_NEXT_PC,
       pc_load: 0,
       dbus_we: 0,
@@ -57,7 +54,6 @@ module ControlUnit (
       alu_in_b: ALU_IN_B_IMM,
       alu_mode: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_MEM,
-      rb_store: 1,
       pc_src: PC_SRC_NEXT_PC,
       pc_load: 0,
       dbus_we: 0,
@@ -67,8 +63,7 @@ module ControlUnit (
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_IMM,
       alu_mode: ALU_OP_FIXED_ADD,
-      dest_reg_from: DEST_REG_FROM_MEM,
-      rb_store: 0,
+      dest_reg_from: DEST_REG_FROM_NONE,
       pc_src: PC_SRC_NEXT_PC,
       pc_load: 0,
       dbus_we: 1,
@@ -80,7 +75,6 @@ module ControlUnit (
       alu_in_b: ALU_IN_B_IMM,
       alu_mode: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_PC,
-      rb_store: 1,
       pc_src: PC_SRC_ALU,
       pc_load: 1,
       dbus_we: 0,
@@ -91,7 +85,6 @@ module ControlUnit (
       alu_in_b: ALU_IN_B_IMM,
       alu_mode: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_PC,
-      rb_store: 1,
       pc_src: PC_SRC_ALU,
       pc_load: 1,
       dbus_we: 0,
@@ -150,7 +143,6 @@ module ControlUnit (
   assign P_alu_in_b = active.alu_in_b;
   assign P_alu_mode = active.alu_mode;
   assign P_dest_reg_from = active.dest_reg_from;
-  assign P_rb_store = active.rb_store;
   assign P_pc_src = active.pc_src;
   assign P_pc_load = active.pc_load;
   assign P_dbus_we = active.dbus_we;

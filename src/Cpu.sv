@@ -26,6 +26,7 @@ module Cpu (
   bit [4:0] rd_index, rs1_index, rs2_index;
   bit [2:0] decoder_f3;
   bit [6:0] decoder_f7;
+  bit enable_rd_store;
 
   // Data paths
   word alu_in_a, alu_in_b, alu_out;
@@ -65,7 +66,7 @@ module Cpu (
       .din(rd_in),
       .dout1(dout1),
       .dout2(dout2),
-      .rd_w(control_signals.rb_store && !hold),
+      .rd_w(enable_rd_store),
       .rs1_en(1),
       .rs2_en(1)
   );
@@ -101,10 +102,10 @@ module Cpu (
 
 
   Mux #(
-      .INS(3)
+      .INS(4)
   ) destination_register_data_selector (
       .sel(control_signals.dest_reg_from),
-      .in ('{alu_out, data_manager.agent_to_host, next_pc}),
+      .in ('{0, alu_out, data_manager.agent_to_host, next_pc}),
       .out(rd_in)
   );
 
@@ -118,6 +119,9 @@ module Cpu (
       .next_pc(next_pc),
       .curr_pc(curr_pc)
   );
+
+  assign enable_rd_store = control_signals.dest_reg_from != DEST_REG_FROM_NONE;
+
 
   assign hold =    (data_manager.write       && data_manager.waitrequest)
                 || (data_manager.read        && !data_manager.readdatavalid)
