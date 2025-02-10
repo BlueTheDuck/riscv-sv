@@ -17,7 +17,6 @@ module Cpu (
   word ir;
 
   // Control signals
-  bit hold;
   bit load_next_instruction;
   bit en_iaddr;
   bit enable_pc_counter;
@@ -27,6 +26,10 @@ module Cpu (
   bit [2:0] decoder_f3;
   bit [6:0] decoder_f7;
   bit enable_rd_store;
+  /// Which bus are we waiting a response on?
+  bit data_stall, instruction_stall;
+  /// Delay execution
+  bit stall;
 
   // Data paths
   word alu_in_a, alu_in_b, alu_out;
@@ -50,7 +53,7 @@ module Cpu (
   ControlUnit cu (
       .clk(clk),
       .rst(rst),
-      .hold(hold),
+      .stall(stall),
       .opcode(opcode),
       .active(control_signals),
 
@@ -112,7 +115,7 @@ module Cpu (
   ProgramCounter pc (
       .clk(clk),
       .rst(rst),
-      .enabled(enable_pc_counter && !hold),
+      .enabled(enable_pc_counter && !stall),
       .load(control_signals.pc_load),
       .step(instruction_len),
       .in(alu_out),
@@ -122,11 +125,11 @@ module Cpu (
 
   assign enable_rd_store = control_signals.dest_reg_from != DEST_REG_FROM_NONE;
 
-
-  assign hold =    (data_manager.write       && data_manager.waitrequest)
-                || (data_manager.read        && !data_manager.readdatavalid)
-                || (instruction_manager.read && !instruction_manager.readdatavalid)
-                || (instruction_manager.read && instruction_manager.waitrequest);
+  assign data_stall = (data_manager.write && data_manager.waitrequest)
+                    || (data_manager.read && !data_manager.readdatavalid);
+  assign instruction_stall = (instruction_manager.read && !instruction_manager.readdatavalid)
+                          || (instruction_manager.read && instruction_manager.waitrequest);
+  assign stall = data_stall || instruction_stall;
 
   assign data_manager.address = alu_out;
   assign data_manager.host_to_agent = dout2;

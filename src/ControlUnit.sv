@@ -11,7 +11,7 @@ module ControlUnit (
     input logic clk,
     input logic rst,
     input logic [6:0] opcode,
-    input bit hold,
+    input bit stall,
 
     output cu_t active,
 
@@ -101,10 +101,10 @@ module ControlUnit (
       state <= MSTATE_NULL;
       next_state <= MSTATE_ADDR_OUT;
     end else begin
-      if (hold) begin
+      if (stall) begin
         state <= state;
         next_state <= next_state;
-        $display("Holding on!");
+        $display("Stalling!");
       end else begin
         state <= next_state;
         priority case (next_state)
