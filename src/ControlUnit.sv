@@ -138,7 +138,14 @@ module ControlUnit (
     end
   end
 `ifdef PRETTY_WAVETRACE
-`default_nettype wire
+  alu_in_a_t P_alu_in_a;
+  alu_in_b_t P_alu_in_b;
+  alu_op_mode_t P_alu_mode;
+  dest_reg_from_t P_dest_reg_from;
+  pc_src_t P_pc_src;
+  bit P_pc_load;
+  bit P_dbus_we;
+  bit P_dbus_re;
   assign P_alu_in_a = active.alu_in_a;
   assign P_alu_in_b = active.alu_in_b;
   assign P_alu_mode = active.alu_mode;
@@ -147,6 +154,5 @@ module ControlUnit (
   assign P_pc_load = active.pc_load;
   assign P_dbus_we = active.dbus_we;
   assign P_dbus_re = active.dbus_re;
-`default_nettype none
 `endif
 endmodule
