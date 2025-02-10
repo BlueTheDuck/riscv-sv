@@ -28,9 +28,12 @@ module Decoder (
   bit signed [31:0] utype_imm;
   bit signed [31:0] jtype_imm;
 
-  assign rd = ir[11:7];
-  assign rs1 = ir[19:15];
-  assign rs2 = ir[24:20];
+  bit enable_rd, enable_rs1, enable_rs2;
+  format_t format;
+
+  assign rd = enable_rd ? ir[11:7] : 0;
+  assign rs1 = enable_rs1 ? ir[19:15] : 0;
+  assign rs2 = enable_rs2 ? ir[24:20] : 0;
   assign rtype_imm = 0;
   assign itype_imm = {{20{ir[31]}}, ir[31:20]};
   assign stype_imm = {{20{ir[31]}}, ir[31:25], ir[11:7]};
@@ -43,7 +46,6 @@ module Decoder (
   assign opcode = ir[6:0];
   assign len = 4;
 
-  format_t format;
   always_comb begin
     case (opcode)
       OP_ALU:    format = FORMAT_R;
@@ -58,13 +60,40 @@ module Decoder (
       default:   format = NULL;
     endcase
     case (format)
-      FORMAT_R:  imm = rtype_imm;
-      FORMAT_I:  imm = itype_imm;
-      FORMAT_S:  imm = stype_imm;
-      FORMAT_B:  imm = btype_imm;
-      FORMAT_U:  imm = utype_imm;
-      FORMAT_J:  imm = jtype_imm;
-      default: imm = 0;
+      FORMAT_R: imm = rtype_imm;
+      FORMAT_I: imm = itype_imm;
+      FORMAT_S: imm = stype_imm;
+      FORMAT_B: imm = btype_imm;
+      FORMAT_U: imm = utype_imm;
+      FORMAT_J: imm = jtype_imm;
+      default:  imm = 0;
+    endcase
+    case (format)
+      FORMAT_R: enable_rd = 1;
+      FORMAT_I: enable_rd = 1;
+      FORMAT_S: enable_rd = 0;
+      FORMAT_B: enable_rd = 0;
+      FORMAT_U: enable_rd = 1;
+      FORMAT_J: enable_rd = 1;
+      default:  enable_rd = 0;
+    endcase
+    case (format)
+      FORMAT_R: enable_rs1 = 1;
+      FORMAT_I: enable_rs1 = 1;
+      FORMAT_S: enable_rs1 = 1;
+      FORMAT_B: enable_rs1 = 1;
+      FORMAT_U: enable_rs1 = 0;
+      FORMAT_J: enable_rs1 = 0;
+      default:  enable_rs1 = 0;
+    endcase
+    case (format)
+      FORMAT_R: enable_rs2 = 1;
+      FORMAT_I: enable_rs2 = 0;
+      FORMAT_S: enable_rs2 = 1;
+      FORMAT_B: enable_rs2 = 1;
+      FORMAT_U: enable_rs2 = 0;
+      FORMAT_J: enable_rs2 = 0;
+      default:  enable_rs2 = 0;
     endcase
 
     if (format == NULL) begin
