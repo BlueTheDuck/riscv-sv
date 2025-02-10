@@ -27,7 +27,8 @@ module ControlUnit (
       pc_src: PC_SRC_NEXT_PC,
       pc_load: 0,
       dbus_we: 0,
-      dbus_re: 0
+      dbus_re: 0,
+      en_comp_unit: 0
   };
   localparam cu_t aluimm = '{
       alu_in_a: ALU_IN_A_REG,
@@ -37,7 +38,8 @@ module ControlUnit (
       pc_src: PC_SRC_NEXT_PC,
       pc_load: 0,
       dbus_we: 0,
-      dbus_re: 0
+      dbus_re: 0,
+      en_comp_unit: 0
   };
   localparam cu_t alu = '{
       alu_in_a: ALU_IN_A_REG,
@@ -47,7 +49,8 @@ module ControlUnit (
       pc_src: PC_SRC_NEXT_PC,
       pc_load: 0,
       dbus_we: 0,
-      dbus_re: 0
+      dbus_re: 0,
+      en_comp_unit: 0
   };
   localparam cu_t load = '{
       alu_in_a: ALU_IN_A_REG,
@@ -57,8 +60,9 @@ module ControlUnit (
       pc_src: PC_SRC_NEXT_PC,
       pc_load: 0,
       dbus_we: 0,
-      dbus_re: 1
-  };  // TODO: Chequear que esto este bien!
+      dbus_re: 1,
+      en_comp_unit: 0
+  };
   localparam cu_t store = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_IMM,
@@ -67,9 +71,20 @@ module ControlUnit (
       pc_src: PC_SRC_NEXT_PC,
       pc_load: 0,
       dbus_we: 1,
-      dbus_re: 0
+      dbus_re: 0,
+      en_comp_unit: 0
   };
-  localparam cu_t branch = null_cu;
+  localparam cu_t branch = '{
+      alu_in_a: ALU_IN_A_PC,
+      alu_in_b: ALU_IN_B_IMM,
+      alu_mode: ALU_OP_FIXED_ADD,
+      dest_reg_from: DEST_REG_FROM_ALU,
+      pc_src: PC_SRC_ALU,
+      pc_load: 1'b1,
+      dbus_we: 1'b0,
+      dbus_re: 1'b0,
+      en_comp_unit: 1
+  };
   localparam cu_t jal = '{
       alu_in_a: ALU_IN_A_PC,
       alu_in_b: ALU_IN_B_IMM,
@@ -78,7 +93,8 @@ module ControlUnit (
       pc_src: PC_SRC_ALU,
       pc_load: 1,
       dbus_we: 0,
-      dbus_re: 0
+      dbus_re: 0,
+      en_comp_unit: 0
   };
   localparam cu_t jalr = '{
       alu_in_a: ALU_IN_A_REG,
@@ -88,7 +104,8 @@ module ControlUnit (
       pc_src: PC_SRC_ALU,
       pc_load: 1,
       dbus_we: 0,
-      dbus_re: 0
+      dbus_re: 0,
+      en_comp_unit: 0
   };
   localparam cu_t lui = null_cu;
   localparam cu_t auipc = null_cu;

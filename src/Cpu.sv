@@ -30,6 +30,7 @@ module Cpu (
   bit data_stall, instruction_stall;
   /// Delay execution
   bit stall;
+  bit comp_result;
 
   // Data paths
   word alu_in_a, alu_in_b, alu_out;
@@ -37,6 +38,7 @@ module Cpu (
   word curr_pc, next_pc;
   word decoder_imm;
   int instruction_len;
+  int pc_step;
 
   wire [6:0] opcode;
   Decoder decoder (
@@ -112,12 +114,26 @@ module Cpu (
       .out(rd_in)
   );
 
+  ComparisonUnit comp (
+      .a(dout1),
+      .b(dout2),
+      .op(decoder_f3),
+      .result(comp_result)
+  );
+  Mux #(
+      .INS(2)
+  ) pc_step_src (
+      .sel(comp_result && control_signals.en_comp_unit),
+      .in ('{instruction_len, decoder_imm}),
+      .out(pc_step)
+  );
+
   ProgramCounter pc (
       .clk(clk),
       .rst(rst),
       .enabled(enable_pc_counter && !stall),
       .load(control_signals.pc_load),
-      .step(instruction_len),
+      .step(pc_step),
       .in(alu_out),
       .next_pc(next_pc),
       .curr_pc(curr_pc)
