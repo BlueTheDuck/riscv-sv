@@ -25,7 +25,6 @@ module ControlUnit (
       alu_mode: ALU_OP_FROM_F3,
       dest_reg_from: DEST_REG_FROM_NONE,
       pc_src: PC_SRC_NEXT_PC,
-      pc_load: 0,
       dbus_we: 0,
       dbus_re: 0,
       en_comp_unit: 0
@@ -36,7 +35,6 @@ module ControlUnit (
       alu_mode: ALU_OP_FROM_F3,
       dest_reg_from: DEST_REG_FROM_ALU,
       pc_src: PC_SRC_NEXT_PC,
-      pc_load: 0,
       dbus_we: 0,
       dbus_re: 0,
       en_comp_unit: 0
@@ -47,7 +45,6 @@ module ControlUnit (
       alu_mode: ALU_OP_FROM_F3,
       dest_reg_from: DEST_REG_FROM_ALU,
       pc_src: PC_SRC_NEXT_PC,
-      pc_load: 0,
       dbus_we: 0,
       dbus_re: 0,
       en_comp_unit: 0
@@ -58,7 +55,6 @@ module ControlUnit (
       alu_mode: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_MEM,
       pc_src: PC_SRC_NEXT_PC,
-      pc_load: 0,
       dbus_we: 0,
       dbus_re: 1,
       en_comp_unit: 0
@@ -69,7 +65,6 @@ module ControlUnit (
       alu_mode: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_NONE,
       pc_src: PC_SRC_NEXT_PC,
-      pc_load: 0,
       dbus_we: 1,
       dbus_re: 0,
       en_comp_unit: 0
@@ -80,7 +75,6 @@ module ControlUnit (
       alu_mode: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_ALU,
       pc_src: PC_SRC_ALU,
-      pc_load: 1'b1,
       dbus_we: 1'b0,
       dbus_re: 1'b0,
       en_comp_unit: 1
@@ -91,7 +85,6 @@ module ControlUnit (
       alu_mode: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_PC,
       pc_src: PC_SRC_ALU,
-      pc_load: 1,
       dbus_we: 0,
       dbus_re: 0,
       en_comp_unit: 0
@@ -102,7 +95,6 @@ module ControlUnit (
       alu_mode: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_PC,
       pc_src: PC_SRC_ALU,
-      pc_load: 1,
       dbus_we: 0,
       dbus_re: 0,
       en_comp_unit: 0
@@ -160,7 +152,6 @@ module ControlUnit (
   alu_op_mode_t P_alu_mode;
   dest_reg_from_t P_dest_reg_from;
   pc_src_t P_pc_src;
-  bit P_pc_load;
   bit P_dbus_we;
   bit P_dbus_re;
   assign P_alu_in_a = active.alu_in_a;
@@ -168,7 +159,6 @@ module ControlUnit (
   assign P_alu_mode = active.alu_mode;
   assign P_dest_reg_from = active.dest_reg_from;
   assign P_pc_src = active.pc_src;
-  assign P_pc_load = active.pc_load;
   assign P_dbus_we = active.dbus_we;
   assign P_dbus_re = active.dbus_re;
 `endif

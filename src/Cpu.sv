@@ -132,7 +132,7 @@ module Cpu (
       .clk(clk),
       .rst(rst),
       .enabled(enable_pc_counter && !stall),
-      .load(control_signals.pc_load),
+      .load(control_signals.pc_src == PC_SRC_ALU),
       .step(pc_step),
       .in(alu_out),
       .next_pc(next_pc),
