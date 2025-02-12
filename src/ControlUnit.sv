@@ -160,10 +160,12 @@ module ControlUnit (
       default:   active = null_cu;
     endcase
     if (active == null_cu && state == MSTATE_EXEC) begin
-      $fatal("Error executing opcode %07b", opcode);
+      $display("Error executing opcode %07b", opcode);
+      $fatal;
     end
   end
 `ifdef PRETTY_WAVETRACE
+// verilator lint_off UNUSEDSIGNAL
   alu_in_a_t P_alu_in_a;
   alu_in_b_t P_alu_in_b;
   alu_op_mode_t P_alu_mode;
@@ -178,5 +180,6 @@ module ControlUnit (
   assign P_pc_src = active.pc_src;
   assign P_dbus_we = active.dbus_we;
   assign P_dbus_re = active.dbus_re;
+// verilator lint_on UNUSEDSIGNAL
 `endif
 endmodule

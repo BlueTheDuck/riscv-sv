@@ -1,35 +1,3 @@
-// `ifndef __AVALON_SV__
-// `define __AVALON_SV__
-
-// `define avalon_host(s) \
-// output word        avalon_``s``_address, \
-// output bit   [3:0] avalon_``s``_byteenable, \
-// input  logic       avalon_``s``_waitrequest \
-// 
-// `define avalon_host_write(s) \
-// output bit   avalon_``s``_write, \
-// output word  avalon_``s``_host_to_agent
-// 
-// `define avalon_host_read(s) \
-// output bit  avalon_``s``_read, \
-// input  word avalon_``s``_agent_to_host, \
-// input  bit  avalon_``s``_readdatavalid
-// 
-// 
-// `define avalon_host(s) \
-// output word        avalon_``s``_address, \
-// output bit   [3:0] avalon_``s``_byteenable, \
-// input  logic       avalon_``s``_waitrequest \
-// 
-// `define avalon_host_write(s) \
-// output bit   avalon_``s``_write, \
-// output word  avalon_``s``_host_to_agent
-// 
-// `define avalon_host_read(s) \
-// output bit  avalon_``s``_read, \
-// input  word avalon_``s``_agent_to_host, \
-// input  bit  avalon_``s``_readdatavalid
-
 import Types::word;
 
 interface AvalonMmRead;

@@ -1,6 +1,4 @@
-// `include "Types.sv"
 import Types::*;
-// `include "AvalonMm.sv"
 
 module Ram (
     input bit clk,

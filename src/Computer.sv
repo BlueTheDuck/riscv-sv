@@ -1,5 +1,3 @@
-import Types::*;
-
 module Computer ();
   bit clk, rst;
   AvalonMmRead ibus ();
@@ -22,7 +20,9 @@ module Computer ();
   );
 
   initial clk = 1;
+  // verilator lint_off BLKSEQ
   always #5 clk = !clk;
+  // verilator lint_on BLKSEQ
   always_ff @(posedge clk, negedge rst) begin
     cpu.dump_state();
   end

@@ -1,7 +1,5 @@
 import Types::word;
 
-// `include "AvalonMm.sv"
-
 module CpuWrapper (
     input bit clk,
     input bit rst,

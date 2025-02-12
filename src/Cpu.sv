@@ -1,7 +1,5 @@
 `default_nettype none
 
-// `include "AvalonMm.sv"
-
 import Types::*;
 
 module Cpu (
