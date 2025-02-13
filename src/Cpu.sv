@@ -171,8 +171,8 @@ module Cpu (
   always_ff @(posedge clk, negedge rst) begin
     if (rst == 0) ir <= 0;
     else if (load_next_instruction && instruction_manager.readdatavalid) begin
-      ir <= swap_endianness(instruction_manager.agent_to_host);
-      $display("IR <= %08x", swap_endianness(instruction_manager.agent_to_host));
+      ir <= instruction_manager.agent_to_host;
+      $display("IR <= %08x", (instruction_manager.agent_to_host));
     end else ir <= ir;
   end
   assign instruction_manager.read = en_iaddr;
