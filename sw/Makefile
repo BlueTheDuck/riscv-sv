@@ -10,7 +10,7 @@ LD := $(WRAPPER) $(TARGET)-ld
 OBJCOPY := $(WRAPPER) $(TARGET)-objcopy
 OBJDUMP := $(WRAPPER) $(TARGET)-objdump
 
-C_FLAGS := -O0 -Xlinker "-Trv32.x" -nostartfiles -nostdlib -fpie -march=rv32id -mabi=ilp32d
+C_FLAGS := -ffunction-sections -fdata-sections -Xlinker "-Trv32.x" -nostartfiles -nostdlib -fpie -march=rv32id -mabi=ilp32d
 LD_FLAGS := -Trv32.x
 
 SRCS := $(wildcard *.c) $(wildcard *.s)
@@ -29,11 +29,12 @@ main: $(OBJS)
 
 hexdump: main
 	$(OBJDUMP) -d $<
+	$(OBJDUMP) -t $<
 .PHONY: hexdump
 
 %.bin: %
 	$(OBJCOPY) -Obinary $< $@
 
 clean:
-	rm main *.o
+	-rm main *.o *.bin
 .PHONY: clean
