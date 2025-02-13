@@ -27,9 +27,9 @@ module MemoryUnit (
   word mreg;
 
   always_ff @(posedge clk, negedge rst) begin
-     if (!rst) begin
+    if (!rst) begin
       state <= READY;
-     end else if (state == READY) begin
+    end else if (state == READY) begin
       if (read) begin
         state <= READING;
         mreg  <= mreg;
@@ -54,6 +54,12 @@ module MemoryUnit (
       end else begin
         state <= state;
       end
+    end else if (state == DONE) begin
+      if (!read && !write) begin
+        state <= READY;
+      end else begin
+        state <= state;
+      end
     end
   end
 
@@ -63,13 +69,14 @@ module MemoryUnit (
   assign ready = state == READY || state == DONE;
   assign from_bus = mreg;
   assign port.host_to_agent = mreg;
-  
-  always_comb case (len)
-    0: port.byteenable = 4'b0001;
-    1: port.byteenable = 4'b0011;
-    2: port.byteenable = 4'b1111;
-    default: port.byteenable = 0;
-  endcase
+
+  always_comb
+    case (len)
+      0: port.byteenable = 4'b0001;
+      1: port.byteenable = 4'b0011;
+      2: port.byteenable = 4'b1111;
+      default: port.byteenable = 0;
+    endcase
 
   function word mask_bytes(input word data, input bit [1:0] len, input bit zero_extend);
     casez ({
