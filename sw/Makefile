@@ -13,8 +13,13 @@ OBJDUMP := $(WRAPPER) $(TARGET)-objdump
 C_FLAGS := -O0 -Xlinker "-Trv32.x" -nostartfiles -nostdlib -fpie -march=rv32id -mabi=ilp32d
 LD_FLAGS := -Trv32.x
 
-SRCS := $(wildcard *.c)
-OBJS := $(SRCS:.c=.o)
+SRCS := $(wildcard *.c) $(wildcard *.s)
+OBJS := $(patsubst %.c,%.o,$(wildcard *.c)) $(patsubst %.s,%.o,$(wildcard *.s))
+
+bsp.o: C_FLAGS += -Oz
+
+%.o: %.s
+	$(CC) $(C_FLAGS) -x assembler -c -o $@ $<
 
 %.o: %.c
 	$(CC) $(C_FLAGS) -c -o $@ $<
