@@ -1,29 +1,31 @@
-import Types::word;
+import Types::triword;
 
 interface AvalonMmRead;
-  word address;
-  bit [3:0] byteenable;
-  bit waitrequest;
-  bit read;
-  logic readdatavalid;
-  word agent_to_host;
+  triword address;
+  logic [3:0] byteenable;
+  logic read;
+  triword agent_to_host;
 
-  modport Agent(
-      input address,
-      input byteenable,
-      output waitrequest,
-      input read,
-      output agent_to_host,
-      output readdatavalid
-  );
+  // Wait-State Signals
+  logic waitrequest;
+
+  // Pipeline Signals
+  logic readdatavalid;
+
   modport Host(
       output address,
       output byteenable,
-      input waitrequest,
       output read,
       input agent_to_host,
+      input waitrequest,
       input readdatavalid
   );
+  modport Agent(
+      input address,
+      input byteenable,
+      input read,
+      output agent_to_host,
+      output waitrequest,
+      output readdatavalid
+  );
 endinterface
-
-// `endif
