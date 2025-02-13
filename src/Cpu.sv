@@ -14,29 +14,6 @@ module Cpu (
   initial ir = 'x;
   word ir;
 
-  always_comb begin
-    if(opcode == OP_STORE) begin
-      case (decoder_f3)
-        0: data_manager.byteenable = 4'b0001;
-        1: data_manager.byteenable = 4'b0011;
-        2: data_manager.byteenable = 4'b1111;
-        default: data_manager.byteenable = 0;
-      endcase
-    end else data_manager.byteenable = 0;
-  end
-  always_comb begin
-    if(opcode == OP_LOAD) begin
-      case (decoder_f3)
-        0: data_in = 32'(signed'(data_manager.agent_to_host[7:0]));
-        1: data_in = 32'(signed'(data_manager.agent_to_host[15:0]));
-        2: data_in = data_manager.agent_to_host;
-        4: data_in = {24'b0, data_manager.agent_to_host[7:0]};
-        5: data_in = {16'b0, data_manager.agent_to_host[15:0]};
-        default: data_in = 0;
-      endcase 
-    end else data_in = 0;
-  end
-
   // Control signals
   bit load_next_instruction;
   bit en_iaddr;
@@ -60,7 +37,7 @@ module Cpu (
   word decoder_imm;
   int instruction_len;
   int pc_step;
-  word data_in;
+  word data_from_bus;
 
   wire [6:0] opcode;
   Decoder decoder (
@@ -132,7 +109,7 @@ module Cpu (
       .INS(4)
   ) destination_register_data_selector (
       .sel(control_signals.dest_reg_from),
-      .in ('{0, alu_out, data_in, next_pc}),
+      .in ('{0, alu_out, data_from_bus, next_pc}),
       .out(rd_in)
   );
 
@@ -161,18 +138,33 @@ module Cpu (
       .curr_pc(curr_pc)
   );
 
+  // TODO: Clean up, organize
+  bit zero_extend;
+  bit [1:0] data_length;
+  bit mu_ready;
+  assign zero_extend = (decoder_f3 & 3'b100) != 0;
+  assign data_length = decoder_f3[1:0];
+
+  MemoryUnit mu (
+      .clk(clk),
+      .rst(rst || load_next_instruction),
+      .read(control_signals.dbus_re),
+      .write(control_signals.dbus_we),
+      .address(alu_out),
+      .len(data_length),
+      .zero_extend(zero_extend),
+      .to_bus(dout2),
+      .from_bus(data_from_bus),
+      .ready(mu_ready),
+      .port(data_manager)
+  );
+
   assign enable_rd_store = control_signals.dest_reg_from != DEST_REG_FROM_NONE;
 
-  assign data_stall = (data_manager.write && data_manager.waitrequest)
-                    || (data_manager.read && !data_manager.readdatavalid);
+  assign data_stall = !mu_ready;
   assign instruction_stall = (instruction_manager.read && !instruction_manager.readdatavalid)
                           || (instruction_manager.read && instruction_manager.waitrequest);
   assign stall = data_stall || instruction_stall;
-
-  assign data_manager.address = alu_out;
-  assign data_manager.host_to_agent = dout2;
-  assign data_manager.read = control_signals.dbus_re;
-  assign data_manager.write = control_signals.dbus_we;
 
   assign instruction_manager.byteenable = 4'b1111;
 
