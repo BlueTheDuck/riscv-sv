@@ -13,9 +13,7 @@ package Types;
     OP_AUIPC  = 7'b0010111
   } opcode_t;
 
-  typedef struct packed {
-    bit mode, un, neg;
-  } comparison_op_t;
+  typedef struct packed {bit mode, un, neg;} comparison_op_t;
 
   typedef enum bit {
     ALU_IN_A_REG = 1'b0,
@@ -48,5 +46,6 @@ package Types;
     pc_src_t pc_src;
     bit dbus_we, dbus_re;
     bit en_comp_unit;
-  } cu_t;
+  } ins_ctrl_signals_t;
+
 endpackage

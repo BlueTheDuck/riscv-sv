@@ -1,18 +1,20 @@
+`default_nettype none
+
 module RegisterFile (
     input bit clk,
-    input logic [4:0] rd,
-    input logic [4:0] rs1,
-    input logic [4:0] rs2,
+    input logic [4:0] rd_sel,
+    input logic [4:0] rs1_sel,
+    input logic [4:0] rs2_sel,
 
-    input  logic [31:0] din,
-    output logic [31:0] dout1,
-    output logic [31:0] dout2,
+    input  logic [31:0] rd_in,
+    output logic [31:0] rs1_out,
+    output logic [31:0] rs2_out,
 
     input bit rd_w,
     input bit rs1_en,
     input bit rs2_en
 );
-  bit [31:0] regs[32];
+  word regs[32];
 
   initial regs[0] = 0;
   generate
@@ -22,15 +24,16 @@ module RegisterFile (
     end
   endgenerate
 
-  assign dout1 = rs1_en ? (rs1 != 0 ? regs[rs1] : 0) : 'z;
-  assign dout2 = rs2_en ? (rs2 != 0 ? regs[rs2] : 0) : 'z;
+  assign rs1_out = rs1_en ? (rs1_sel != 0 ? regs[rs1_sel] : 0) : 'z;
+  assign rs2_out = rs2_en ? (rs2_sel != 0 ? regs[rs2_sel] : 0) : 'z;
 
   always_ff @(posedge clk) begin
-    if (rd_w && rd != 0) begin
-      regs[rd] <= din;
-      $display("regs[%2d] <= %08x", rd, din);
+    if (rd_w && rd_sel != 0) begin
+      regs[rd_sel] <= rd_in;
+      $display("regs[%2d] <= %08x", rd_sel, rd_in);
     end
   end
+
 `ifdef DUMP_FINAL_STATE
   final begin
     $display(" - Register bank: ");

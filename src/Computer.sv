@@ -6,8 +6,8 @@ module Computer ();
   CrossBar xbar (
       .clk(clk),
       .bus_side(bus.Host),
-      .primary(ibus.Agent),
-      .secondary(dbus.Agent)
+      .instruction_manager(ibus.Agent),
+      .data_manager(dbus.Agent)
   );
   Memory #(
       .BASE(0),
