@@ -9,6 +9,7 @@ ARGS="+1800-2017ext+sv -sv --trace --relative-includes --timing --top Computer \
 				-j 0"
       
 rm trace.vcd
+rm ram.hexdump
 
 clear;
 verilator $ARGS \

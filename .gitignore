@@ -3,3 +3,4 @@ obj_dir
 tags
 *.vcd
 *.bin
+*.hexdump

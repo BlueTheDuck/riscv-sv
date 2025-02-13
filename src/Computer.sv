@@ -2,13 +2,21 @@ module Computer ();
   bit clk, rst;
   AvalonMmRead ibus ();
   AvalonMmRw dbus ();
-
-  Rom rom (
-      .data_manager(ibus.Agent),
-      .*
+  AvalonMmRw bus ();
+  CrossBar xbar (
+      .clk(clk),
+      .bus_side(bus.Host),
+      .primary(ibus.Agent),
+      .secondary(dbus.Agent)
   );
-  Ram ram (
-      .data_manager(dbus.Agent),
+  Memory #(
+      .BASE(0),
+      .SIZE(8192),
+      .INIT_FILE("rom.bin"),
+      .DUMP_FILE("ram.hexdump"),
+      .READ_ONLY(0)
+  ) memory (
+      .bus(bus.Agent),
       .*
   );
   Cpu cpu (
