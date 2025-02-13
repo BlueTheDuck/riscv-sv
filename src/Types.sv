@@ -1,5 +1,6 @@
 package Types;
   typedef bit [31:0] word;
+  typedef logic [31:0] triword;
 
   typedef enum bit [6:0] {
     OP_ALU    = 7'b0110011,
