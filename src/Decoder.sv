@@ -29,6 +29,7 @@ module Decoder (
   bit signed [31:0] jtype_imm;
 
   bit enable_rd, enable_rs1, enable_rs2;
+  bit f3_valid, f7_valid;
   format_t format;
 
   assign rd = enable_rd ? ir[11:7] : 0;
@@ -40,8 +41,8 @@ module Decoder (
   assign btype_imm = {{19{ir[31]}}, ir[31], ir[7], ir[30:25], ir[11:8], 1'b0};
   assign utype_imm = {ir[31:12], 12'b0};
   assign jtype_imm = {{12{ir[31]}}, ir[19:12], ir[20], ir[30:25], ir[24:21], 1'b0};
-  assign f3 = ir[14:12];
-  assign f7 = ir[31:25];
+  assign f3 = f3_valid ? ir[14:12] : 0;
+  assign f7 = f7_valid ? ir[31:25] : 0;
 
   assign opcode = ir[6:0];
   assign len = 4;
@@ -94,6 +95,24 @@ module Decoder (
       FORMAT_U: enable_rs2 = 0;
       FORMAT_J: enable_rs2 = 0;
       default:  enable_rs2 = 0;
+    endcase
+    case (format)
+      FORMAT_R: f3_valid = 1;
+      FORMAT_I: f3_valid = 1;
+      FORMAT_S: f3_valid = 1;
+      FORMAT_B: f3_valid = 1;
+      FORMAT_U: f3_valid = 0;
+      FORMAT_J: f3_valid = 0;
+      default:  f3_valid = 0;
+    endcase
+    case (format)
+      FORMAT_R: f7_valid = 1;
+      FORMAT_I: f7_valid = 0;
+      FORMAT_S: f7_valid = 0;
+      FORMAT_B: f7_valid = 0;
+      FORMAT_U: f7_valid = 0;
+      FORMAT_J: f7_valid = 0;
+      default:  f7_valid = 0;
     endcase
 
     if (format == NULL) begin
