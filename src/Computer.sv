@@ -1,3 +1,5 @@
+`define KB(n) (n * 1024)
+
 module Computer ();
   bit clk, rst;
   AvalonMmRead ibus ();
@@ -11,7 +13,7 @@ module Computer ();
   );
   Memory #(
       .BASE(0),
-      .SIZE(8192),
+      .SIZE(`KB(16)),
       .INIT_FILE("rom.bin"),
       .DUMP_FILE("ram.hexdump"),
       .READ_ONLY(0)
