@@ -24,28 +24,21 @@ module MemoryUnit (
     DONE
   } state;
 
-  word mreg;
-
   always_ff @(posedge clk, negedge rst) begin
     if (!rst) begin
       state <= READY;
     end else if (state == READY) begin
-      if (read) begin
+      if (read && !write) begin
         state <= READING;
-        mreg  <= mreg;
-      end else if (write) begin
+      end else if (!read && write) begin
         state <= WRITING;
-        mreg  <= mask_bytes(to_bus, len, zero_extend);
       end else begin
         state <= READY;
-        mreg  <= mreg;
       end
     end else if (state == READING) begin
       if (port.readdatavalid && !port.waitrequest) begin
-        mreg  <= mask_bytes(port.agent_to_host, len, zero_extend);
         state <= DONE;
       end else begin
-        mreg  <= mreg;
         state <= state;
       end
     end else if (state == WRITING) begin
@@ -67,8 +60,8 @@ module MemoryUnit (
   assign port.write = state == WRITING;
   assign port.address = address;
   assign ready = state == READY || state == DONE;
-  assign from_bus = mreg;
-  assign port.host_to_agent = mreg;
+  assign from_bus = mask_bytes(port.agent_to_host, len, zero_extend);
+  assign port.host_to_agent = mask_bytes(to_bus, len, zero_extend);
 
   always_comb
     case (len)
