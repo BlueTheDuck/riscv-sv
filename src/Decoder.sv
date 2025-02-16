@@ -96,24 +96,11 @@ module Decoder (
       FORMAT_J: enable_rs2 = 0;
       default:  enable_rs2 = 0;
     endcase
-    case (format)
-      FORMAT_R: f3_valid = 1;
-      FORMAT_I: f3_valid = 1;
-      FORMAT_S: f3_valid = 1;
-      FORMAT_B: f3_valid = 1;
-      FORMAT_U: f3_valid = 0;
-      FORMAT_J: f3_valid = 0;
-      default:  f3_valid = 0;
-    endcase
-    case (format)
-      FORMAT_R: f7_valid = 1;
-      FORMAT_I: f7_valid = 0;
-      FORMAT_S: f7_valid = 0;
-      FORMAT_B: f7_valid = 0;
-      FORMAT_U: f7_valid = 0;
-      FORMAT_J: f7_valid = 0;
-      default:  f7_valid = 0;
-    endcase
+    // Always output f3 and f7.
+    // Too many things depend on these to keep track of
+    // so it's better to always have them available
+    f3_valid = 1;
+    f7_valid = 1;
 
     if (format == NULL) begin
       $display("Unknown encoding for opcode: %b", opcode);
