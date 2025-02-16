@@ -74,7 +74,7 @@ module Cpu (
       .rd_in(rd_in),
       .rs1_out(rs1_out),
       .rs2_out(rs2_out),
-      .rd_w(enable_rd_store),
+      .rd_w(enable_rd_store && !data_stall),
       .rs1_en(1),
       .rs2_en(1)
   );
