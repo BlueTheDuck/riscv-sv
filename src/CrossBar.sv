@@ -26,7 +26,7 @@ module CrossBar (
       else if (!instruction_manager_idle) state <= SERVING_INSTRUCTION_MANAGER;
       else state <= IDLE;
     end else begin
-      if (!bus_side.waitrequest && (!bus_side.read || bus_side.readdatavalid)) begin
+      if(!bus_side.read && !bus_side.write) begin
         state <= IDLE;
       end else state <= state;
     end
