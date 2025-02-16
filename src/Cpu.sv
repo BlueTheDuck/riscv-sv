@@ -19,7 +19,6 @@ module Cpu (
   bit en_iaddr;
   bit enable_pc_counter;
   ins_ctrl_signals_t ins_signals;
-  bit [9:0] alu_op;
   bit [4:0] rd_sel, rs1_sel, rs2_sel;
   bit [2:0] ins_f3;
   bit [6:0] ins_f7;
@@ -30,6 +29,7 @@ module Cpu (
   bit stall;
   bit comp_result;
   bit memory_unit_ready;
+  alu_mode_t alu_mode;
 
   /* Data path */
   word alu_in_a, alu_in_b, alu_out;
@@ -57,7 +57,10 @@ module Cpu (
       .rst(rst),
       .stall(stall),
       .opcode(opcode),
+      .f3(ins_f3),
+      .f7(ins_f7),
       .active(ins_signals),
+      .alu_mode(alu_mode),
 
       .load_ir(load_next_instruction),
       .en_iaddr(en_iaddr),
@@ -89,22 +92,12 @@ module Cpu (
       .in ('{rs2_out, ins_imm}),
       .out(alu_in_b)
   );
-  Mux #(
-      .INS(2),
-      .W  (10)
-  ) alu_operation_mode (
-      .sel(ins_signals.alu_mode),
-      .in ('{{ins_f7, ins_f3}, 0}),
-      .out(alu_op)
-  );
   Alu alu (
       .in_a(alu_in_a),
       .in_b(alu_in_b),
-      .op3 (alu_op[2:0]),
-      .op7 (alu_op[9:3]),
+      .mode(alu_mode),
       .out (alu_out)
   );
-
 
   Mux #(
       .INS(4)

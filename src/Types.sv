@@ -2,6 +2,11 @@ package Types;
   typedef bit [31:0] word;
   typedef logic [31:0] triword;
 
+  typedef enum bit {
+    UNSIGNED,
+    SIGNED
+  } signedness_t;
+
   typedef enum bit [6:0] {
     OP_ALU    = 7'b0110011,
     OP_ALUI   = 7'b0010011,
@@ -14,6 +19,23 @@ package Types;
     OP_AUIPC  = 7'b0010111
   } opcode_t;
 
+  typedef enum int {
+    ALU_NULL,
+    ALU_ADD,
+    ALU_SUB,
+    ALU_SHIFT_LEFT_LOGICAL,
+    ALU_SHIFT_RIGHT_LOGICAL,
+    ALU_SHIFT_RIGHT_ARITHMETIC,
+    ALU_SET_LESS_THAN,
+    ALU_XOR,
+    ALU_AND,
+    ALU_OR
+  } alu_op_t;
+  typedef struct packed {
+    alu_op_t operation;
+    signedness_t signedness;
+  } alu_mode_t;
+
   typedef struct packed {bit mode, un, neg;} comparison_op_t;
 
   typedef enum bit {
@@ -25,9 +47,9 @@ package Types;
     ALU_IN_B_IMM
   } alu_in_b_t;
   typedef enum bit {
-    ALU_OP_FROM_F3   = 1'b0,
+    ALU_OP_FROM_OPCODE = 1'b0,
     ALU_OP_FIXED_ADD
-  } alu_op_mode_t;
+  } alu_op_from_t;
   typedef enum bit [1:0] {
     DEST_REG_FROM_NONE = 2'b0,
     DEST_REG_FROM_ALU,
@@ -42,7 +64,7 @@ package Types;
   typedef struct packed {
     alu_in_a_t alu_in_a;
     alu_in_b_t alu_in_b;
-    alu_op_mode_t alu_mode;
+    alu_op_from_t alu_op_from;
     dest_reg_from_t dest_reg_from;
     pc_src_t pc_src;
     bit dbus_we, dbus_re;
