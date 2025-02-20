@@ -1,0 +1,74 @@
+diff --git a/.gitmodules b/.gitmodules
+index e1505e7..eb34d8a 100644
+--- a/.gitmodules
++++ b/.gitmodules
+@@ -2,56 +2,44 @@
+ 	path = binutils
+ 	url = https://sourceware.org/git/binutils-gdb.git
+ 	branch = binutils-2_43-branch
+-	shallow = true
+ [submodule "gcc"]
+ 	path = gcc
+ 	url = https://gcc.gnu.org/git/gcc.git
+ 	branch = releases/gcc-14
+-	shallow = true
+ [submodule "glibc"]
+ 	path = glibc
+ 	url = https://sourceware.org/git/glibc.git
+-	shallow = true
+ [submodule "dejagnu"]
+ 	path = dejagnu
+ 	url = https://git.savannah.gnu.org/git/dejagnu.git
+ 	branch = master
+-	shallow = true
+ [submodule "newlib"]
+ 	path = newlib
+ 	url = https://sourceware.org/git/newlib-cygwin.git
+ 	branch = master
+-	shallow = true
+ [submodule "gdb"]
+ 	path = gdb
+ 	url = https://sourceware.org/git/binutils-gdb.git
+ 	branch = gdb-15-branch
+-	shallow = true
+ [submodule "qemu"]
+ 	path = qemu
+ 	url = https://gitlab.com/qemu-project/qemu.git
+-	shallow = true
+ [submodule "musl"]
+ 	path = musl
+ 	url = https://git.musl-libc.org/git/musl
+ 	branch = master
+-	shallow = true
+ [submodule "spike"]
+ 	path = spike
+ 	url = https://github.com/riscv-software-src/riscv-isa-sim.git
+ 	branch = master
+-	shallow = true
+ [submodule "pk"]
+ 	path = pk
+ 	url = https://github.com/riscv-software-src/riscv-pk.git
+ 	branch = master
+-	shallow = true
+ [submodule "llvm"]
+ 	path = llvm
+ 	url = https://github.com/llvm/llvm-project.git
+ 	branch = release/19.x
+-	shallow = true
+ [submodule "uclibc-ng"]
+ 	path = uclibc-ng
+ 	url = https://github.com/wbx-github/uclibc-ng.git
+-	shallow = true
+diff --git a/Makefile.in b/Makefile.in
+index b597a40..4449aa0 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -347,7 +347,7 @@ endif
+ $(srcdir)/%/.git:
+ 	cd $(srcdir) && \
+ 	flock `git rev-parse --git-dir`/config git submodule init $(dir $@) && \
+-	flock `git rev-parse --git-dir`/config git submodule update --progress --depth 1 $(dir $@)
++	flock `git rev-parse --git-dir`/config git submodule update --progress $(dir $@)
+ 
+ stamps/install-host-gcc: $(GCC_SRCDIR) $(GCC_SRC_GIT)
+ 	if test -f $</contrib/download_prerequisites && test "@NEED_GCC_EXTERNAL_LIBRARIES@" = "true"; then cd $< && ./contrib/download_prerequisites; fi

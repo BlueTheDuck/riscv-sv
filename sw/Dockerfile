@@ -12,15 +12,14 @@ RUN apt-get install -y \
     python3 python3-pip python3-tomli \
     libmpc-dev libmpfr-dev libgmp-dev gawk \
     build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev ninja-build cmake libglib2.0-dev libslirp-dev
-  
-RUN git clone --depth 1 --branch 2025.01.20 \
-  https://github.com/riscv-collab/riscv-gnu-toolchain.git /opt/riscv/
-RUN git -C /opt/riscv submodule update --depth 1 --init -- /opt/riscv/gcc
-RUN git -C /opt/riscv submodule update --depth 1 --init -- /opt/riscv/newlib
-RUN git -C /opt/riscv submodule update --depth 1 --init -- /opt/riscv/binutils
-RUN git -C /opt/riscv submodule update --depth 1 --init -- /opt/riscv/gdb
 
-WORKDIR /opt/riscv
+RUN git clone --branch 2025.01.20 https://github.com/riscv-collab/riscv-gnu-toolchain.git /opt/riscv-gnu-toolchain/ 
+ADD fix_submodules.patch /opt/riscv-gnu-toolchain/
+
+WORKDIR /opt/riscv-gnu-toolchain/
+
+RUN git apply ./fix_submodules.patch
+
 RUN ./configure --prefix=/opt/riscv --with-arch=rv32gc --with-abi=ilp32d --enable-multilib --with-languages=c,c++
 RUN make -j$(nproc)
 RUN make install
