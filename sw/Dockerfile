@@ -23,13 +23,10 @@ RUN git apply ./fix_submodules.patch
 RUN ./configure --prefix=/opt/riscv --with-arch=rv32gc --with-abi=ilp32d --enable-multilib --with-languages=c,c++
 RUN make -j$(nproc)
 RUN make install
+RUN find /opt/riscv -type f -executable -exec strip --strip-all '{}' 2>/dev/null \;
 
 FROM debian:bookworm-slim AS runtime
-COPY --from=build /opt/riscv/bin /opt/riscv/bin
-COPY --from=build /opt/riscv/binutils /opt/riscv/binutils
-COPY --from=build /opt/riscv/lib /opt/riscv/lib
-COPY --from=build /opt/riscv/libexec /opt/riscv/libexec
-COPY --from=build /opt/riscv/riscv32-unknown-elf /opt/riscv/riscv32-unknown-elf
+COPY --from=build /opt/riscv/ /opt/riscv/
 
 RUN addgroup riscv && useradd -m -g riscv -u 1000 riscv
 ENV PATH /opt/riscv/bin:${PATH}
