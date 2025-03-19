@@ -39,6 +39,7 @@ module Cpu (
   int instruction_len;
   int pc_step;
   word data_from_bus;
+  word actual_pc;
 
   wire [6:0] opcode;
   Decoder decoder (
@@ -82,7 +83,7 @@ module Cpu (
       .INS(2)
   ) alu_input_a_selector (
       .sel(ins_signals.alu_in_a),
-      .in ('{rs1_out, curr_pc}),
+      .in ('{rs1_out, actual_pc}),
       .out(alu_in_a)
   );
   Mux #(
@@ -150,7 +151,8 @@ module Cpu (
     if (rst == 0) ir <= 0;
     else if (load_next_instruction && instruction_manager.readdatavalid) begin
       ir <= instruction_manager.agent_to_host;
-      $display("IR <= %08x", (instruction_manager.agent_to_host));
+      actual_pc <= curr_pc;
+      $display("IR <= %08x FROM %08x", (instruction_manager.agent_to_host), (instruction_manager.address));
     end else ir <= ir;
   end
 
@@ -171,6 +173,7 @@ module Cpu (
 
   task automatic dump_state();
     $display("[%4d] CPU State:", $time());
+    $display(" - PC := %08X", actual_pc);
     $display(" - Data bus A: %s", ins_signals.alu_in_a == 0 ? "REG" : "PC");
     $display(" - Data bus B: %s", ins_signals.alu_in_b == 0 ? "REG" : "IMM");
     $display(" - Data bus C: %d", ins_signals.dest_reg_from);
