@@ -28,7 +28,7 @@ module Cpu (
   /// Delay execution
   bit stall;
   bit comp_result;
-  bit memory_unit_ready;
+  bit mu_read_valid, mu_write_done;
   alu_mode_t alu_mode;
 
   /* Data path */
@@ -143,7 +143,8 @@ module Cpu (
       .zero_extend((ins_f3 & 3'b100) != 0),
       .to_bus(rs2_out),
       .from_bus(data_from_bus),
-      .ready(memory_unit_ready),
+      .read_valid(mu_read_valid),
+      .write_done(mu_write_done),
       .port(data_manager)
   );
 
@@ -160,7 +161,7 @@ module Cpu (
   assign instruction_manager.read = en_iaddr;
   assign instruction_manager.address = en_iaddr ? curr_pc : 0;
 
-  assign data_stall = !memory_unit_ready;
+  assign data_stall = !(mu_read_valid && mu_write_done);
   assign instruction_stall = (instruction_manager.read && !instruction_manager.readdatavalid)
                           || (instruction_manager.read && instruction_manager.waitrequest);
   assign stall = data_stall || instruction_stall;

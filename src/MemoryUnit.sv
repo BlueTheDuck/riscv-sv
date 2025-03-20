@@ -13,53 +13,25 @@ module MemoryUnit (
     input bit zero_extend,
     input word to_bus,
     output word from_bus,
-    output bit ready,
+    output bit read_valid,
+    output bit write_done,
 
     AvalonMmRw.Host port
 );
-  enum {
-    READY,
-    READING,
-    WRITING,
-    DONE
-  } state;
 
-  always_ff @(posedge clk, negedge rst) begin
-    if (!rst) begin
-      state <= READY;
-    end else if (state == READY) begin
-      if (read && !write) begin
-        state <= READING;
-      end else if (!read && write) begin
-        state <= WRITING;
-      end else begin
-        state <= READY;
-      end
-    end else if (state == READING) begin
-      if (port.readdatavalid && !port.waitrequest) begin
-        state <= DONE;
-      end else begin
-        state <= state;
-      end
-    end else if (state == WRITING) begin
-      if (!port.waitrequest) begin
-        state <= DONE;
-      end else begin
-        state <= state;
-      end
-    end else if (state == DONE) begin
-      if (!read && !write) begin
-        state <= READY;
-      end else begin
-        state <= state;
-      end
-    end
-  end
-
-  assign port.read = state == READING;
-  assign port.write = state == WRITING;
+  assign port.read = read;
+  assign port.write = write;
   assign port.address = address;
-  assign ready = state == READY || state == DONE;
+  
+  // read_valid ⟷ read ⟹ !wait ∧ readdatavalid
+  //             - !read ∨ (!wait ∧ readdatavalid)
+  assign read_valid = !read || (!port.waitrequest && port.readdatavalid);
+
+  // write_done ⟷ write ⟹ !wait
+  //             - !write ∨ !wait
+  //             - !(write ∧ wait)
+  assign write_done = !(write && port.waitrequest);
+  
   assign from_bus = mask_bytes(port.agent_to_host, len, zero_extend);
   assign port.host_to_agent = mask_bytes(to_bus, len, zero_extend);
 
