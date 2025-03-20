@@ -70,7 +70,7 @@ module ControlUnit (
       alu_in_a: ALU_IN_A_PC,
       alu_in_b: ALU_IN_B_IMM,
       alu_op_from: ALU_OP_FIXED_ADD,
-      dest_reg_from: DEST_REG_FROM_ALU,
+      dest_reg_from: DEST_REG_FROM_NONE,
       pc_src: PC_SRC_ALU,
       dbus_we: 1'b0,
       dbus_re: 1'b0,
