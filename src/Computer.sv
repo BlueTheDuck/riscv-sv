@@ -5,25 +5,17 @@ module Computer ();
   AvalonMmRead ibus ();
   AvalonMmRw dbus ();
   AvalonMmRw bus ();
-  CrossBar xbar (
-      .clk(clk),
-      .bus_side(bus.Host),
-      .instruction_manager(ibus.Agent),
-      .data_manager(dbus.Agent)
-  );
-  Memory #(
-      .BASE(0),
-      .SIZE(`KB(16)),
+  DualPortedMem #(
+      .SIZE(`KB(8)),
       .INIT_FILE("rom.bin"),
-      .DUMP_FILE("ram.hexdump"),
-      .READ_ONLY(0)
+      .DUMP_FILE("ram.bin")
   ) memory (
-      .bus(bus.Agent),
-      .*
-  );
-  Cpu cpu (
       .clk(clk),
-      .rst(rst),
+      .rw_bus(dbus.Agent),
+      .ro_bus(ibus.Agent)
+  );
+  
+  Cpu cpu (
       .instruction_manager(ibus.Host),
       .data_manager(dbus.Host),
       .*
