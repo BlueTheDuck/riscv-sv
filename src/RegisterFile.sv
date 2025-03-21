@@ -1,3 +1,5 @@
+import Types::word;
+
 `default_nettype none
 
 module RegisterFile (
@@ -27,7 +29,7 @@ module RegisterFile (
   assign rs1_out = rs1_en ? (rs1_sel != 0 ? regs[rs1_sel] : 0) : 'z;
   assign rs2_out = rs2_en ? (rs2_sel != 0 ? regs[rs2_sel] : 0) : 'z;
 
-  always_ff @(posedge clk) begin
+  always_ff @(negedge clk) begin
     if (rd_w && rd_sel != 0) begin
       regs[rd_sel] <= rd_in;
       $display("regs[%2d] <= %08x", rd_sel, rd_in);

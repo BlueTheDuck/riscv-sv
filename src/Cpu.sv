@@ -22,7 +22,7 @@ module Cpu (
   bit [4:0] rd_sel, rs1_sel, rs2_sel;
   bit [2:0] ins_f3;
   bit [6:0] ins_f7;
-  bit enable_rd_store;
+  bit enable_rd_store, write_back_stage;
   /// Which bus are we waiting a response on?
   bit data_stall, instruction_stall;
   /// Delay execution
@@ -65,7 +65,8 @@ module Cpu (
 
       .load_ir(load_next_instruction),
       .en_iaddr(en_iaddr),
-      .en_pc_counter(enable_pc_counter)
+      .en_pc_counter(enable_pc_counter),
+      .write_back_stage(write_back_stage)
   );
   RegisterFile regs (
       .clk(clk),
@@ -75,7 +76,7 @@ module Cpu (
       .rd_in(rd_in),
       .rs1_out(rs1_out),
       .rs2_out(rs2_out),
-      .rd_w(enable_rd_store && !data_stall),
+      .rd_w(enable_rd_store && write_back_stage),
       .rs1_en(1),
       .rs2_en(1)
   );

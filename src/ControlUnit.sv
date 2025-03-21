@@ -14,7 +14,8 @@ module ControlUnit (
 
     output bit load_ir,
     output bit en_iaddr,
-    output bit en_pc_counter
+    output bit en_pc_counter,
+    output bit write_back_stage
 );
   localparam ins_ctrl_signals_t null_cu = '{
       alu_in_a: ALU_IN_A_REG,
@@ -117,11 +118,12 @@ module ControlUnit (
       en_comp_unit: 0
   };
 
-  enum bit [1:0] {
+  enum int {
     CU_STATE_NULL,
     CU_STATE_ADDR_OUT,
     CU_STATE_LOAD_IR,
-    CU_STATE_EXEC
+    CU_STATE_EXEC,
+    CU_STATE_WRITEBACK
   } state, next_state;
 
   always_ff @(posedge clk, negedge rst) begin
@@ -137,7 +139,8 @@ module ControlUnit (
         priority case (next_state)
           CU_STATE_ADDR_OUT: next_state <= CU_STATE_LOAD_IR;
           CU_STATE_LOAD_IR: next_state <= CU_STATE_EXEC;
-          CU_STATE_EXEC: next_state <= CU_STATE_ADDR_OUT;
+          CU_STATE_EXEC: next_state <= CU_STATE_WRITEBACK;
+          CU_STATE_WRITEBACK: next_state <= CU_STATE_ADDR_OUT;
           default: next_state <= CU_STATE_NULL;
         endcase
       end
@@ -146,6 +149,7 @@ module ControlUnit (
   assign en_iaddr = state == CU_STATE_ADDR_OUT || state == CU_STATE_LOAD_IR;
   assign load_ir = state == CU_STATE_LOAD_IR;
   assign en_pc_counter = state == CU_STATE_EXEC;
+  assign write_back_stage = state == CU_STATE_WRITEBACK;
 
   always_comb begin
     case (opcode)
