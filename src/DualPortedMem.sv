@@ -45,7 +45,7 @@ module DualPortedMem #(
   always_ff @(posedge clk) begin
     if (rw_bus.write) begin
       $display("WRITE %04b, %08x", rw_bus.byteenable, rw_bus.address);
-      for (int i = 0; i < 3; i++) begin
+      for (int i = 0; i < 4; i++) begin
         if (rw_bus.byteenable[i]) begin
           if (rw_bus.address + i <= SIZE) begin
             mem[rw_bus.address+i] <= rw_bus.host_to_agent[i*8+:8];
