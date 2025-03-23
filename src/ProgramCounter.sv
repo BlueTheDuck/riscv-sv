@@ -5,15 +5,13 @@ module ProgramCounter (
     input bit load,
     input logic [31:0] step,
     input logic [31:0] in,
-    output logic [31:0] curr_pc,
     output logic [31:0] next_pc
 );
   logic [31:0] pc;
   initial begin
     pc = 'x;
   end
-  assign curr_pc = pc;
-  assign next_pc = pc + step;
+  assign next_pc = pc;
 
   always_ff @(posedge clk or negedge rst) begin
     if (rst == 0) begin
@@ -23,10 +21,9 @@ module ProgramCounter (
         pc <= pc;
       end else begin
         if (load) begin
-          $display("PC <= %08x", in);
           pc <= in;
         end else begin
-          pc <= next_pc;
+          pc <= pc + step;
         end
       end
     end

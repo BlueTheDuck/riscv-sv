@@ -130,8 +130,7 @@ module Cpu (
       .load(ins_signals.pc_src == PC_SRC_ALU),
       .step(pc_step),
       .in(alu_out),
-      .next_pc(next_pc),
-      .curr_pc(curr_pc)
+      .next_pc(next_pc)
   );
 
   MemoryUnit mu (
@@ -153,14 +152,14 @@ module Cpu (
     if (rst == 0) ir <= 0;
     else if (load_next_instruction && instruction_manager.readdatavalid) begin
       ir <= instruction_manager.agent_to_host;
-      actual_pc <= curr_pc;
+      actual_pc <= next_pc;
       $display("IR <= %08x FROM %08x", (instruction_manager.agent_to_host), (instruction_manager.address));
     end else ir <= ir;
   end
 
   assign instruction_manager.byteenable = 4'b1111;
   assign instruction_manager.read = en_iaddr;
-  assign instruction_manager.address = en_iaddr ? curr_pc : 0;
+  assign instruction_manager.address = en_iaddr ? next_pc : 0;
 
   assign data_stall = !(mu_read_valid && mu_write_done);
   assign instruction_stall = (instruction_manager.read && !instruction_manager.readdatavalid)
