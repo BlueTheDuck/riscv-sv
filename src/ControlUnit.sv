@@ -68,11 +68,11 @@ module ControlUnit (
       en_comp_unit: 0
   };
   localparam ins_ctrl_signals_t branch = '{
-      alu_in_a: ALU_IN_A_PC,
-      alu_in_b: ALU_IN_B_IMM,
+      alu_in_a: ALU_IN_A_REG,
+      alu_in_b: ALU_IN_B_REG,
       alu_op_from: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_NONE,
-      pc_src: PC_SRC_ALU,
+      pc_src: PC_SRC_NEXT_PC,
       dbus_we: 1'b0,
       dbus_re: 1'b0,
       en_comp_unit: 1
