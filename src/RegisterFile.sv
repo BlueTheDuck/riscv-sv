@@ -12,9 +12,7 @@ module RegisterFile (
     output logic [31:0] rs1_out,
     output logic [31:0] rs2_out,
 
-    input bit rd_w,
-    input bit rs1_en,
-    input bit rs2_en
+    input bit rd_w
 );
   word regs[32];
 
@@ -26,13 +24,12 @@ module RegisterFile (
     end
   endgenerate
 
-  assign rs1_out = rs1_en ? (rs1_sel != 0 ? regs[rs1_sel] : 0) : 'z;
-  assign rs2_out = rs2_en ? (rs2_sel != 0 ? regs[rs2_sel] : 0) : 'z;
+  assign rs1_out = rs1_sel != 0 ? regs[rs1_sel] : 0;
+  assign rs2_out = rs2_sel != 0 ? regs[rs2_sel] : 0;
 
   always_ff @(negedge clk) begin
     if (rd_w && rd_sel != 0) begin
       regs[rd_sel] <= rd_in;
-      $display("regs[%2d] <= %08x", rd_sel, rd_in);
     end
   end
 

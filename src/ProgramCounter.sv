@@ -7,28 +7,23 @@ module ProgramCounter (
     input logic [31:0] in,
     output logic [31:0] next_pc
 );
-  logic [31:0] pc;
   initial begin
-    pc = 'x;
+    next_pc = 'x;
   end
-  assign next_pc = pc;
 
   always_ff @(posedge clk or negedge rst) begin
     if (rst == 0) begin
-      pc <= 32'b0;
+      next_pc <= 32'b0;
     end else begin
       if (!enabled) begin
-        pc <= pc;
+        next_pc <= next_pc;
       end else begin
         if (load) begin
-          pc <= in;
+          next_pc <= in;
         end else begin
-          pc <= pc + step;
+          next_pc <= next_pc + step;
         end
       end
     end
   end
-  task automatic dump_state();
-    $display(" - PC = %x; Next PC = %x", pc, pc + step);
-  endtask
 endmodule
