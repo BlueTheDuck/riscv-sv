@@ -30,6 +30,7 @@ module Cpu (
   bit comp_result;
   bit mu_read_valid, mu_write_done;
   alu_mode_t alu_mode;
+  bit alu_cmp_result;
 
   /* Data path */
   word alu_in_a, alu_in_b, alu_out;
@@ -106,16 +107,11 @@ module Cpu (
       .out(rd_in)
   );
 
-  ComparisonUnit comp (
-      .a(rs1_out),
-      .b(rs2_out),
-      .op(ins_f3),
-      .result(comp_result)
-  );
+  assign alu_cmp_result = (alu_out != 0) == ins_f3[0];
   Mux #(
       .INS(2)
   ) pc_step_src (
-      .sel(comp_result && ins_signals.en_comp_unit),
+      .sel(alu_cmp_result && ins_signals.branching),
       .in ('{instruction_len, ins_imm}),
       .out(pc_step)
   );

@@ -36,7 +36,7 @@ package Types;
     signedness_t signedness;
   } alu_mode_t;
 
-  typedef struct packed {bit mode, un, neg;} comparison_op_t;
+  typedef struct packed {bit mode, unsignedness, negate;} comparison_op_t;
 
   typedef enum bit {
     ALU_IN_A_REG = 1'b0,
@@ -46,9 +46,10 @@ package Types;
     ALU_IN_B_REG = 1'b0,
     ALU_IN_B_IMM
   } alu_in_b_t;
-  typedef enum bit {
-    ALU_OP_FROM_OPCODE = 1'b0,
-    ALU_OP_FIXED_ADD
+  typedef enum bit [1:0] {
+    ALU_OP_FIXED_ADD = 2'b0,
+    ALU_OP_ARITHMETIC_FROM_OPCODE,
+    ALU_OP_LOGIC_FROM_OPCODE
   } alu_op_from_t;
   typedef enum bit [1:0] {
     DEST_REG_FROM_NONE = 2'b0,

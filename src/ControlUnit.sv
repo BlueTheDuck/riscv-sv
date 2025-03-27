@@ -20,32 +20,32 @@ module ControlUnit (
   localparam ins_ctrl_signals_t null_cu = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_REG,
-      alu_op_from: ALU_OP_FROM_OPCODE,
+      alu_op_from: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_NONE,
       pc_src: PC_SRC_NEXT_PC,
       dbus_we: 0,
       dbus_re: 0,
-      en_comp_unit: 0
+      branching: 0
   };
   localparam ins_ctrl_signals_t aluimm = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_IMM,
-      alu_op_from: ALU_OP_FROM_OPCODE,
+      alu_op_from: ALU_OP_ARITHMETIC_FROM_OPCODE,
       dest_reg_from: DEST_REG_FROM_ALU,
       pc_src: PC_SRC_NEXT_PC,
       dbus_we: 0,
       dbus_re: 0,
-      en_comp_unit: 0
+      branching: 0
   };
   localparam ins_ctrl_signals_t alu = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_REG,
-      alu_op_from: ALU_OP_FROM_OPCODE,
+      alu_op_from: ALU_OP_ARITHMETIC_FROM_OPCODE,
       dest_reg_from: DEST_REG_FROM_ALU,
       pc_src: PC_SRC_NEXT_PC,
       dbus_we: 0,
       dbus_re: 0,
-      en_comp_unit: 0
+      branching: 0
   };
   localparam ins_ctrl_signals_t load = '{
       alu_in_a: ALU_IN_A_REG,
@@ -55,7 +55,7 @@ module ControlUnit (
       pc_src: PC_SRC_NEXT_PC,
       dbus_we: 0,
       dbus_re: 1,
-      en_comp_unit: 0
+      branching: 0
   };
   localparam ins_ctrl_signals_t store = '{
       alu_in_a: ALU_IN_A_REG,
@@ -65,17 +65,17 @@ module ControlUnit (
       pc_src: PC_SRC_NEXT_PC,
       dbus_we: 1,
       dbus_re: 0,
-      en_comp_unit: 0
+      branching: 0
   };
   localparam ins_ctrl_signals_t branch = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_REG,
-      alu_op_from: ALU_OP_FIXED_ADD,
+      alu_op_from: ALU_OP_LOGIC_FROM_OPCODE,
       dest_reg_from: DEST_REG_FROM_NONE,
       pc_src: PC_SRC_NEXT_PC,
       dbus_we: 1'b0,
       dbus_re: 1'b0,
-      en_comp_unit: 1
+      branching: 1
   };
   localparam ins_ctrl_signals_t jal = '{
       alu_in_a: ALU_IN_A_PC,
@@ -85,7 +85,7 @@ module ControlUnit (
       pc_src: PC_SRC_ALU,
       dbus_we: 0,
       dbus_re: 0,
-      en_comp_unit: 0
+      branching: 0
   };
   localparam ins_ctrl_signals_t jalr = '{
       alu_in_a: ALU_IN_A_REG,
@@ -95,7 +95,7 @@ module ControlUnit (
       pc_src: PC_SRC_ALU,
       dbus_we: 0,
       dbus_re: 0,
-      en_comp_unit: 0
+      branching: 0
   };
   localparam ins_ctrl_signals_t lui = '{
       alu_in_a: ALU_IN_A_REG,
@@ -105,7 +105,7 @@ module ControlUnit (
       pc_src: PC_SRC_NEXT_PC,
       dbus_we: 0,
       dbus_re: 0,
-      en_comp_unit: 0
+      branching: 0
   };
   localparam ins_ctrl_signals_t auipc = '{
       alu_in_a: ALU_IN_A_PC,
@@ -115,7 +115,7 @@ module ControlUnit (
       pc_src: PC_SRC_NEXT_PC,
       dbus_we: 0,
       dbus_re: 0,
-      en_comp_unit: 0
+      branching: 0
   };
 
   enum int {
@@ -173,7 +173,7 @@ module ControlUnit (
   always_comb begin : ALU_OP_DECODER
     if (active.alu_op_from == ALU_OP_FIXED_ADD) begin
       alu_mode.operation = ALU_ADD;
-    end else if (active.alu_op_from == ALU_OP_FROM_OPCODE) begin
+    end else if (active.alu_op_from == ALU_OP_ARITHMETIC_FROM_OPCODE) begin
       unique case (f3)
         0:
         if (opcode == OP_ALUI) alu_mode.operation = ALU_ADD;
@@ -183,11 +183,11 @@ module ControlUnit (
         end
         1: alu_mode.operation = ALU_SHIFT_LEFT_LOGICAL;
         2: begin
-          alu_mode.operation = ALU_SET_LESS_THAN;
+          alu_mode.operation  = ALU_SET_LESS_THAN;
           alu_mode.signedness = SIGNED;
         end
         3: begin
-          alu_mode.operation = ALU_SET_LESS_THAN;
+          alu_mode.operation  = ALU_SET_LESS_THAN;
           alu_mode.signedness = UNSIGNED;
         end
         4: alu_mode.operation = ALU_XOR;
@@ -196,6 +196,22 @@ module ControlUnit (
         else if (f7 == 'h20) alu_mode.operation = ALU_SHIFT_RIGHT_ARITHMETIC;
         6: alu_mode.operation = ALU_OR;
         7: alu_mode.operation = ALU_AND;
+      endcase
+    end else if (active.alu_op_from == ALU_OP_LOGIC_FROM_OPCODE) begin
+      var comparison_op_t comp_op = f3;
+      priority casez ({
+        comp_op.mode, comp_op.unsignedness
+      })
+        2'b0?:   alu_mode.operation = ALU_SUB;
+        2'b10: begin
+          alu_mode.operation  = ALU_SET_LESS_THAN;
+          alu_mode.signedness = SIGNED;
+        end
+        2'b11: begin
+          alu_mode.operation  = ALU_SET_LESS_THAN;
+          alu_mode.signedness = UNSIGNED;
+        end
+        default: $fatal;
       endcase
     end else $fatal;
   end
