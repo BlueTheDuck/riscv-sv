@@ -69,7 +69,7 @@ package Types;
     dest_reg_from_t dest_reg_from;
     pc_src_t pc_src;
     bit dbus_we, dbus_re;
-    bit en_comp_unit;
+    bit branching;
   } ins_ctrl_signals_t;
 
 endpackage
