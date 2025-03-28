@@ -6,15 +6,13 @@ module Computer ();
   AvalonMmRw dbus ();
   AvalonMmRw bus ();
   DualPortedMem #(
-      .SIZE(`KB(8)),
-      .INIT_FILE("rom.bin"),
-      .DUMP_FILE("ram.bin")
+      .SIZE(8 * 1024)
   ) memory (
       .clk(clk),
       .rw_bus(dbus.Agent),
       .ro_bus(ibus.Agent)
   );
-  
+
   Cpu cpu (
       .instruction_manager(ibus.Host),
       .data_manager(dbus.Host),
@@ -31,6 +29,14 @@ module Computer ();
   initial rst = 1;
 
   initial begin
+    var string memory_init_file;
+    $value$plusargs("INIT_FILE=%s", memory_init_file);
+    if (memory_init_file == "") begin
+      $error("INIT_FILE not specified.\n example: <exe> +INIT_FILE=rom.bin");
+      $fatal;
+    end
+    memory.loadContentFrom(memory_init_file);
+
     $dumpfile("trace.vcd");
     $dumpvars(0, Computer);
     fork
@@ -38,6 +44,13 @@ module Computer ();
       #1000 $finish;
     join
   end
+
+  final begin
+    $display("Simulation finished at %0t", $time);
+    memory.dumpContentTo("ram.bin");
+  end
+
+
   task automatic doTest();
     cpu.dump_state();
     #5 rst = 1;

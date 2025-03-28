@@ -1,9 +1,7 @@
 import Types::word;
 
 module DualPortedMem #(
-    parameter int SIZE = 1024,
-    parameter string INIT_FILE = "",
-    parameter string DUMP_FILE = ""
+    parameter int SIZE = 1024
 ) (
     input bit clk,
 
@@ -12,7 +10,11 @@ module DualPortedMem #(
 );
   byte mem[SIZE];
 
-
+  initial begin
+    for (int i = 0; i < SIZE; i++) begin
+      mem[i] = 8'hXX;
+    end
+  end
 
   assign rw_bus.agent_to_host = {
     mem[rw_bus.address+3], mem[rw_bus.address+2], mem[rw_bus.address+1], mem[rw_bus.address+0]
@@ -26,21 +28,6 @@ module DualPortedMem #(
   };
   assign ro_bus.waitrequest = 0;
   assign ro_bus.readdatavalid = 1;
-
-
-  initial begin
-    int fd = $fopen(INIT_FILE, "r");
-
-    for (int i = 0; i < SIZE; i++) begin
-      mem[i] = 8'h55;
-    end
-    if (fd != 0) begin
-      $fread(mem, fd, 0);
-    end else begin
-      $fatal("%s could not be opened", INIT_FILE);
-    end
-    $fclose(fd);
-  end
 
   always_ff @(posedge clk) begin
     if (rw_bus.write) begin
@@ -56,17 +43,26 @@ module DualPortedMem #(
     end
   end
 
-  final begin
-    if (DUMP_FILE != "") begin
-      int fd = $fopen(DUMP_FILE, "wb");
-      if (fd != 0) begin
-        for (int i = 0; i < SIZE; i += 1) begin
-          $fwrite(fd, "%c", mem[i]);
-        end
-        $fclose(fd);
-      end else begin
-        $fatal("%s could not be opened", DUMP_FILE);
-      end
+  task automatic loadContentFrom(string filename);
+    int fd = $fopen(filename, "r");
+
+    if (fd != 0) begin
+      $fread(mem, fd, 0);
+    end else begin
+      $fatal("'%s' could not be opened", filename);
     end
-  end
+    $fclose(fd);
+  endtask
+
+  task automatic dumpContentTo(string filename);
+    int fd = $fopen(filename, "wb");
+    if (fd != 0) begin
+      for (int i = 0; i < SIZE; i += 1) begin
+        $fwrite(fd, "%c", mem[i]);
+      end
+      $fclose(fd);
+    end else begin
+      $fatal("'%s' could not be opened", filename);
+    end
+  endtask
 endmodule
