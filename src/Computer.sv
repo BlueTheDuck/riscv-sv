@@ -37,7 +37,7 @@ module Computer ();
     end
     memory.loadContentFrom(memory_init_file);
 
-    $dumpfile("trace.vcd");
+    $dumpfile("logs/computer.vcd");
     $dumpvars(0, Computer);
     fork
       doTest();
@@ -47,7 +47,7 @@ module Computer ();
 
   final begin
     $display("Simulation finished at %0t", $time);
-    memory.dumpContentTo("ram.bin");
+    memory.dumpContentTo("logs/ram.bin");
   end
 
 

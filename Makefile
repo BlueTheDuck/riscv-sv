@@ -27,4 +27,4 @@ $(INIT_FILE):
 clean:
 	-make -C sw clean
 	-rm obj_dir/*.o obj_dir/V$(TOP) obj_dir/sim_computer
-	-rm ram.bin rom.bin
+	-rm logs/*.bin logs/*.vcd
