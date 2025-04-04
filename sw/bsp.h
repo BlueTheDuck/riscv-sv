@@ -1,11 +1,11 @@
 #ifndef __BSP_H__
 #define __BSP_H__
 
-void _start();
-
 #include "stdint.h"
 
-void dout(uint32_t);
+__attribute__((naked, noreturn)) void _start();
+extern void main() __attribute__((noreturn));
+// maybe main shouldn't be noreturn?
 
 extern volatile uint32_t *DATA_OUT;
 

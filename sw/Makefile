@@ -16,7 +16,8 @@ LD_FLAGS := -Trv32.x
 SRCS := $(wildcard *.c) $(wildcard *.s)
 OBJS := $(patsubst %.c,%.o,$(wildcard *.c)) $(patsubst %.s,%.o,$(wildcard *.s))
 
-bsp.o: C_FLAGS += -Oz
+bsp.o: C_FLAGS += -Oz -Wl,--no-relax
+main.o: C_FLAGS += -O1
 
 %.o: %.s
 	$(CC) $(C_FLAGS) -x assembler -c -o $@ $<
@@ -36,5 +37,5 @@ hexdump: main
 	$(OBJCOPY) -Obinary $< $@
 
 clean:
-	-rm main *.o *.bin
+	-rm main *.o *.bin *.dmp *.dmp.txt
 .PHONY: clean
