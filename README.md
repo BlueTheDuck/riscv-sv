@@ -14,6 +14,8 @@ Key features:
 - **Simulation Tools**: Includes a simulation environment for testing and debugging.
 - **Educational Focus**: Aimed at students and enthusiasts learning CPU architecture.
 
+Make sure to check the [Wiki tab](https://github.com/BlueTheDuck/riscv-sv/wiki), as that is where every component of the system is detailed.
+
 ## Project Strucutre
 
 - `src`: SystemVerilog code, including both Core and simulation environment
