@@ -18,7 +18,10 @@ module CpuWrapper (
     input  logic       avalon_instruction_manager_waitrequest,
     output bit         avalon_instruction_manager_read,
     input  word        avalon_instruction_manager_agent_to_host,
-    input  bit         avalon_instruction_manager_readdatavalid
+    input  bit         avalon_instruction_manager_readdatavalid,
+
+    output word debug_current_pc,
+    output word debug_instruction
 );
   AvalonMmRw data_manager ();
   AvalonMmRead instruction_manager ();
@@ -44,6 +47,7 @@ module CpuWrapper (
       .clk(clk),
       .rst(rst),
       .data_manager(data_manager.Host),
-      .instruction_manager(instruction_manager.Host)
+      .instruction_manager(instruction_manager.Host),
+      .*
   );
 endmodule

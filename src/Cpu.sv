@@ -7,7 +7,10 @@ module Cpu (
     input logic rst,
 
     AvalonMmRw.Host   data_manager,
-    AvalonMmRead.Host instruction_manager
+    AvalonMmRead.Host instruction_manager,
+
+    output word debug_current_pc,
+    output word debug_instruction
 );
 
   /* Registers */

@@ -1,7 +1,11 @@
+import Types::*;
+
 `define KB(n) (n * 1024)
 
 module Computer ();
   bit clk, rst;
+  word debug_current_pc, debug_instruction;
+
   AvalonMmRead ibus ();
   AvalonMmRw dbus ();
   AvalonMmRw bus ();
