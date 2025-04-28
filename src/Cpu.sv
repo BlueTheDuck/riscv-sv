@@ -165,6 +165,7 @@ module Cpu (
     return {idata[7:0], idata[15:8], idata[23:16], idata[31:24]};
   endfunction
 
+`ifdef __DUMP_STATE__
   task automatic dump_state();
     $display("[%4d] CPU State:", $time());
     $display(" - PC := %08X", current_pc);
@@ -173,4 +174,5 @@ module Cpu (
     $display(" - Data bus C: %d", ins_signals.dest_reg_from);
     alu.dump_state();
   endtask
+`endif  // __DUMP_STATE__
 endmodule

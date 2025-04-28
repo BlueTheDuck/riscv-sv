@@ -24,7 +24,6 @@ module Computer ();
   always #5 clk = !clk;
   // verilator lint_on BLKSEQ
   always_ff @(posedge clk, negedge rst) begin
-    cpu.dump_state();
   end
   initial rst = 1;
 
@@ -52,15 +51,15 @@ module Computer ();
 
 
   task automatic doTest();
+`ifdef __DUMP_STATE__
     cpu.dump_state();
+`endif
     #5 rst = 1;
     #9 rst = 0;
     #7 rst = 1;
     $display("Reset done");
-  endtask  //automatic
-  task automatic tick();
-`ifdef DEBUG
+`ifdef __DUMP_STATE__
     cpu.dump_state();
 `endif
-  endtask  //automatic
+  endtask
 endmodule
