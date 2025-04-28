@@ -11,6 +11,7 @@ SRCS := $(wildcard src/*.sv)
 MODULES := src/Types.sv
 SIM_MAIN := src/sim_computer.cpp
 INIT_FILE := sw/main.bin
+SV2V := tools/sv2v
 
 # Note: Verilator automatically handles the dependencies and rebuilds the model if needed
 .PHONY: build run
@@ -28,3 +29,7 @@ clean:
 	-make -C sw clean
 	-rm obj_dir/*.o obj_dir/V$(TOP) obj_dir/sim_computer
 	-rm logs/*.bin logs/*.vcd
+	-rm dist.v
+
+dist.v: src/CpuWrapper.sv $(SRCS)
+	$(SV2V) -y src -I src --write=$@ --top $(basename $(<F)) $^
