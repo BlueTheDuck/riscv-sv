@@ -33,7 +33,7 @@ module RegisterFile (
     end
   end
 
-`ifdef DUMP_FINAL_STATE
+`ifdef __DUMP_STATE__
   final begin
     $display(" - Register bank: ");
     for (int r = 0; r < 32; r += 4) begin
@@ -41,7 +41,7 @@ module RegisterFile (
                regs[r+3]);
     end
   end
-`endif
+`endif  // __DUMP_STATE__
 `ifdef PRETTY_WAVETRACE
   // verilator lint_off UNUSEDSIGNAL
   word zero, ra, sp, gp, tp;

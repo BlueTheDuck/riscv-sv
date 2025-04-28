@@ -33,6 +33,7 @@ module Alu (
       end
     endcase
   end
+`ifdef __DUMP_STATE__
   task automatic dump_state();
     $display(" - ALU: %08x %s %08x = %x", in_a, getOpSymbol(mode.operation), in_b, out);
   endtask
@@ -51,4 +52,5 @@ module Alu (
       default: return "UNKNOWN";
     endcase
   endfunction
+`endif // __DUMP_STATE__
 endmodule

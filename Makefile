@@ -19,7 +19,7 @@ build:
 	verilator $(VERILATOR_ARGS) $(SIM_MAIN) --top $(TOP) $(MODULES) src/$(TOP).sv
 
 run: build $(INIT_FILE)
-	./obj_dir/V$(TOP) +INIT_FILE=$(INIT_FILE)
+	./obj_dir/V$(TOP) +__DUMP_STATE__ +INIT_FILE=$(INIT_FILE)
 
 $(INIT_FILE):
 	$(MAKE) DOCKER=1 -C sw $(notdir $@)
