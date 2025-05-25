@@ -1,14 +1,16 @@
-ifeq ($(DOCKER),1)
-WRAPPER := docker run -it --user 1000:1000 --rm -v $(shell pwd):/opt/workdir rv32i:latest
-else
-WRAPPER :=
+ifndef TOOLCHAIN_PATH
+TOOLCHAIN_PATH := /opt/riscv/bin/
+$(warning "TOOLCHAIN_PATH is not set, using default: $(TOOLCHAIN_PATH)")
 endif
+
+export PATH := $(TOOLCHAIN_PATH):$(PATH)
+
 TARGET := riscv32-unknown-elf
 
-CC := $(WRAPPER) $(TARGET)-gcc
-LD := $(WRAPPER) $(TARGET)-ld
-OBJCOPY := $(WRAPPER) $(TARGET)-objcopy
-OBJDUMP := $(WRAPPER) $(TARGET)-objdump
+CC := $(TARGET)-gcc
+LD := $(TARGET)-ld
+OBJCOPY := $(TARGET)-objcopy
+OBJDUMP := $(TARGET)-objdump
 
 C_FLAGS := -ffunction-sections -fdata-sections -Xlinker "-Trv32.x" -nostartfiles -nostdlib -fpie -march=rv32id -mabi=ilp32d
 LD_FLAGS := -Trv32.x

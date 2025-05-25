@@ -21,24 +21,3 @@ RUN ./configure --prefix=/opt/riscv --with-arch=rv32gc --with-abi=ilp32d --enabl
 RUN make -j$(nproc)
 RUN make install
 RUN find /opt/riscv -type f -executable -exec strip --strip-all '{}' 2>/dev/null \;
-
-FROM debian:bookworm-slim AS runtime
-COPY --from=build /opt/riscv/ /opt/riscv/
-
-RUN addgroup riscv && useradd -m -g riscv -u 1000 riscv
-ENV PATH /opt/riscv/bin:${PATH}
-WORKDIR /opt/workdir/
-
-ENV DEBIAN_FRONTEND=noninteractive \
-    LANG=C.UTF-8 \
-    LC_ALL=C.UTF-8
-
-RUN apt-get update && apt-get upgrade -y \
-    && apt-get -y install apt-utils git 2>&1
-RUN apt-get install -y libexpat1 libgmp10 libmpc3 libmpfr6 zlib1g
-# RUN apt-get autoremove -y \
-#     && apt-get clean -y \
-#     && rm -rf /var/lib/apt/lists/*
-ENV DEBIAN_FRONTEND=dialog \
-    LANG=C.UTF-8 \
-    LC_ALL=C.UTF-8

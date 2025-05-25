@@ -23,7 +23,7 @@ run: build $(INIT_FILE)
 	./obj_dir/V$(TOP) +__DUMP_STATE__ +INIT_FILE=$(INIT_FILE)
 
 $(INIT_FILE):
-	$(MAKE) DOCKER=1 -C sw $(notdir $@)
+	$(MAKE) -C sw $(notdir $@)
 
 clean:
 	-make -C sw clean
