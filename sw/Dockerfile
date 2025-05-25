@@ -13,12 +13,9 @@ RUN apt-get install -y \
     libmpc-dev libmpfr-dev libgmp-dev gawk \
     build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev ninja-build cmake libglib2.0-dev libslirp-dev
 
-RUN git clone --branch 2025.01.20 https://github.com/riscv-collab/riscv-gnu-toolchain.git /opt/riscv-gnu-toolchain/ 
-ADD fix_submodules.patch /opt/riscv-gnu-toolchain/
+RUN git clone --branch 2025.05.22 https://github.com/riscv-collab/riscv-gnu-toolchain.git /opt/riscv-gnu-toolchain/ 
 
 WORKDIR /opt/riscv-gnu-toolchain/
-
-RUN git apply ./fix_submodules.patch
 
 RUN ./configure --prefix=/opt/riscv --with-arch=rv32gc --with-abi=ilp32d --enable-multilib --with-languages=c,c++
 RUN make -j$(nproc)
