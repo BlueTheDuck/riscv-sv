@@ -4,8 +4,7 @@
 #include "stdint.h"
 
 __attribute__((naked, noreturn)) void _start();
-extern void main() __attribute__((noreturn));
-// maybe main shouldn't be noreturn?
+extern void main();
 
 extern volatile uint32_t *DATA_OUT;
 
