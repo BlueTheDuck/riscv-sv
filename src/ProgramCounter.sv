@@ -15,14 +15,12 @@ module ProgramCounter (
     if (rst == 0) begin
       next_pc <= 32'b0;
     end else begin
-      if (!enabled) begin
-        next_pc <= next_pc;
+      if (load) begin
+        next_pc <= in;
+      end else if (enabled) begin
+        next_pc <= next_pc + step;
       end else begin
-        if (load) begin
-          next_pc <= in;
-        end else begin
-          next_pc <= next_pc + step;
-        end
+        next_pc <= next_pc;
       end
     end
   end
