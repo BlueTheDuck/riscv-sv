@@ -217,7 +217,8 @@ module ControlUnit (
   end
 
   task automatic set_execute();
-    state <= CU_STATE_EXEC;
+    state <= CU_STATE_NULL;
+    next_state <= CU_STATE_EXEC;
   endtask
 
 `ifdef PRETTY_WAVETRACE

@@ -178,4 +178,9 @@ module Cpu (
     alu.dump_state();
   endtask
 `endif  // __DUMP_STATE__
+
+  task automatic execute_opcode(word opcode);
+    ir <= opcode;
+    cu.set_execute();
+  endtask
 endmodule

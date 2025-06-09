@@ -82,4 +82,10 @@ module RegisterFile (
   assign t6   = regs[31];
   // verilator lint_on UNUSEDSIGNAL
 `endif
+
+  task automatic set_registers(word [31:0] values[32]);
+    for (int i = 0; i < 32; i++) begin
+      regs[i] = values[i];
+    end
+  endtask
 endmodule
