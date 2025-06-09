@@ -51,7 +51,7 @@ module CpuTb ();
     $display("Starting CPU Testbench...");
     reset();
     fork
-      doTest();
+      do_test();
       #1000 begin
         $display("Testbench timed out, stopping simulation.");
         $finish;
@@ -59,9 +59,9 @@ module CpuTb ();
     join
   end
 
-  task automatic doTest();
+  task automatic do_test();
     $display("Doing test");
-    cpu.executeOpcode(op_i_t'{imm: 1, rs1: 10, f3: 0, rd: 11, op: OP_ALUI});  // x11 = x10 + 1
+    cpu.execute_opcode(op_i_t'{imm: 1, rs1: 10, f3: 0, rd: 11, op: OP_ALUI});  // x11 = x10 + 1
     cpu.regs.set_registers('{
       10: 4,
       default: 0

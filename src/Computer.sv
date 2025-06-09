@@ -38,23 +38,23 @@ module Computer ();
       $error("INIT_FILE not specified.\n example: <exe> +INIT_FILE=rom.bin");
       $fatal;
     end
-    memory.loadContentFrom(memory_init_file);
+    memory.load_content(memory_init_file);
 
     $dumpfile("logs/computer.vcd");
     $dumpvars(0, Computer);
     fork
-      doTest();
+      do_test();
       #1000 $finish;
     join
   end
 
   final begin
     $display("Simulation finished at %0t", $time);
-    memory.dumpContentTo("logs/ram.bin");
+    memory.dump_content("logs/ram.bin");
   end
 
 
-  task automatic doTest();
+  task automatic do_test();
 `ifdef __DUMP_STATE__
     cpu.dump_state();
 `endif

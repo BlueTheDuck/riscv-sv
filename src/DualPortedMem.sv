@@ -43,7 +43,7 @@ module DualPortedMem #(
     end
   end
 
-  task automatic loadContentFrom(string filename);
+  task automatic load_content(string filename);
     int fd = $fopen(filename, "r");
 
     if (fd != 0) begin
@@ -54,7 +54,7 @@ module DualPortedMem #(
     $fclose(fd);
   endtask
 
-  task automatic dumpContentTo(string filename);
+  task automatic dump_content(string filename);
     int fd = $fopen(filename, "wb");
     if (fd != 0) begin
       for (int i = 0; i < SIZE; i += 1) begin
