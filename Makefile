@@ -9,7 +9,7 @@ VERILATOR_ARGS :=	+1800-2017ext+sv -sv --trace --relative-includes --timing \
 				-j 0
 SRCS := $(wildcard src/*.sv)
 MODULES := src/Types.sv
-INIT_FILE := sw/main.bin
+INIT_FILE ?= sw/main.bin
 SV2V := tools/sv2v
 
 # Note: Verilator automatically handles the dependencies and rebuilds the model if needed
