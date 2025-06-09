@@ -33,3 +33,9 @@ clean:
 
 dist.v: src/CpuWrapper.sv $(SRCS)
 	$(SV2V) -y src -I src --write=$@ --top $(basename $(<F)) $^
+
+cputb:
+	mkdir -p obj_dir/tb_cpu
+	verilator --Mdir obj_dir/tb_cpu $(VERILATOR_ARGS) $(SIM_MAIN) --top CpuTb $(MODULES) tb/CpuTb.sv
+	./obj_dir/tb_cpu/VCpuTb
+.PHONY: cputb
