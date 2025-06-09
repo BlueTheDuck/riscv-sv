@@ -15,8 +15,8 @@ OBJDUMP := $(TARGET)-objdump
 C_FLAGS := -ffunction-sections -fdata-sections -Xlinker "-Trv32.x" -nostartfiles -nostdlib -fpie -march=rv32id -mabi=ilp32d
 LD_FLAGS := -Trv32.x
 
-SRCS := $(wildcard *.c) $(wildcard *.s)
-OBJS := $(patsubst %.c,%.o,$(wildcard *.c)) $(patsubst %.s,%.o,$(wildcard *.s))
+SRCS ?= $(wildcard *.c) $(wildcard *.s)
+OBJS := $(patsubst %.c,%.o,$(filter %.c,$(SRCS))) $(patsubst %.s,%.o,$(filter %.s,$(SRCS)))
 
 bsp.o: C_FLAGS += -Oz -Wl,--no-relax
 main.o: C_FLAGS += -O1
