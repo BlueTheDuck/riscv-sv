@@ -51,7 +51,12 @@ module CpuTb ();
     $display("Starting CPU Testbench...");
     reset();
     fork
-      do_test();
+      begin
+        test_math();
+        test_jumps();
+        $display("All tests passed successfully.");
+        #1 $finish;
+      end
       #1000 begin
         $display("Testbench timed out, stopping simulation.");
         $finish;
@@ -59,19 +64,59 @@ module CpuTb ();
     join
   end
 
-  task automatic do_test();
+  task automatic test_math();
     $display("Doing test");
-    cpu.execute_opcode(op_i_t'{imm: 1, rs1: 10, f3: 0, rd: 11, op: OP_ALUI});  // x11 = x10 + 1
-    cpu.regs.set_registers('{
-      10: 4,
-      default: 0
-    });
+    cpu.execute_opcode(op_i_t
+'{imm: 1, rs1: 10, f3: 0, rd: 11, op: OP_ALUI});  // x11 = x10 + 1
+    cpu.regs.set_registers('{10: 4, default: 0});
+
     @(posedge clk);
+    #1
+      assert (cpu.regs.regs[11] == 0)
+      else $error("Assertion failed: expected x11 == 0, but got %0d", cpu.regs.regs[11]);
+
     @(posedge clk);
-    @(posedge clk);
-    @(posedge clk);
+    #1
+      assert (cpu.regs.regs[11] == 5)
+      else $error("Assertion failed: expected x11 == 5, but got %0d", cpu.regs.regs[11]);
+
+    $display("Test passed: x11 is %0d", cpu.regs.regs[11]);
     $display("Test completed successfully.");
-    $finish;
+  endtask
+
+  task automatic test_jumps();
+    reset();
+    $display("Testing jumps...");
+    cpu.execute_opcode(op_i_t'{imm: 'hC, rs1: 0, f3: 0, rd: 0, op: OP_JALR});
+    $display("[%04t] J 0xC", $time);
+    @(posedge clk);
+    @(posedge clk);
+    #1
+      assert (cpu.next_pc == 'hC)
+      else $error("Assertion failed: expected next_pc == 0xC, but got 0x%08h", cpu.next_pc);
+    @(posedge clk);
+    @(posedge clk);
+    #1
+      assert (cpu.current_pc == 'hC)
+      else $error("Assertion failed: expected current_pc == 0xC, but got 0x%08h", cpu.current_pc);
+    @(posedge clk);
+
+    cpu.execute_opcode(op_i_t'{imm: 'h18, rs1: 0, f3: 0, rd: 1, op: OP_JALR});
+    @(posedge clk);
+    @(posedge clk);
+    #1
+      assert (cpu.next_pc == 'h18)
+      else $error("Assertion failed: expected next_pc == 0x18, but got 0x%08h", cpu.next_pc);
+    @(posedge clk);
+    @(posedge clk);
+    #1
+      assert (cpu.current_pc == 'h18)
+      else
+        $error(
+            "Assertion failed: expected current_pc == 0x00000018, but got 0x%08h", cpu.current_pc
+        );
+    assert (cpu.regs.regs[1] == 'hC + 4)
+    else $error("Assertion failed: expected x1 == 0xC, but got 0x%08h", cpu.regs.regs[1]);
   endtask
 
   task automatic reset();
