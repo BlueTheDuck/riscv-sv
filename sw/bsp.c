@@ -14,5 +14,6 @@ void _start() {
     *bss = 0;
   }
   main();
+  *DATA_OUT = 0x0;
   loop {}
 }

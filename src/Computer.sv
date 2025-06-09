@@ -27,7 +27,11 @@ module Computer ();
   // verilator lint_off BLKSEQ
   always #5 clk = !clk;
   // verilator lint_on BLKSEQ
-  always_ff @(posedge clk, negedge rst) begin
+  always begin
+    if (dbus.write && dbus.address == 32'hF0000000) begin
+      $display("[%04t] exit(%h)", $time, dbus.host_to_agent);
+      $finish;
+    end
   end
   initial rst = 1;
 
@@ -44,7 +48,7 @@ module Computer ();
     $dumpvars(0, Computer);
     fork
       do_test();
-      #1000 $finish;
+      timeout();
     join
   end
 
@@ -65,5 +69,14 @@ module Computer ();
 `ifdef __DUMP_STATE__
     cpu.dump_state();
 `endif
+  endtask
+
+  task automatic timeout();
+    for (int i = 0; i < 100; i++) begin
+      #1000;
+      $display("Warning %d/100: %0t ticks elapsed", i+1, $time);
+    end
+    $display("Simulation timeout at %t, finishing...", $time);
+    $finish;
   endtask
 endmodule
