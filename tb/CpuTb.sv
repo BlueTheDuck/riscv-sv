@@ -49,9 +49,9 @@ module CpuTb ();
     $dumpfile("cpu_tb.vcd");
     $dumpvars(0, CpuTb);
     $display("Starting CPU Testbench...");
-    reset();
     fork
       begin
+        test_core();
         test_math();
         test_jumps();
         $display("All tests passed successfully.");
@@ -63,6 +63,30 @@ module CpuTb ();
       end
     join
   end
+
+  task automatic test_core();
+    $display("[%5t] Testing core functionality", $time);
+  
+    $display("[%5t] Assert initial reset", $time);
+    reset();
+    #1 assert (cpu.ir == 0)
+    else $error("Assertion failed: expected ir == 0, but got %0d", cpu.ir);
+    assert (cpu.current_pc == 0)
+    else $error("Assertion failed: expected current_pc == 0, but got %0d", cpu.current_pc);
+    assert (cpu.next_pc == 0)
+    else $error("Assertion failed: expected next_pc == 0, but got %0d", cpu.next_pc);
+
+
+    $display("[%5t] Assert reset after running", $time);
+    repeat (10) @(posedge clk);
+    reset();
+    #1 assert (cpu.ir == 0)
+    else $error("Assertion failed: expected ir == 0, but got %0d", cpu.ir);
+    assert (cpu.current_pc == 0)
+    else $error("Assertion failed: expected current_pc == 0, but got %0d", cpu.current_pc);
+    assert (cpu.next_pc == 0)
+    else $error("Assertion failed: expected next_pc == 0, but got %0d", cpu.next_pc);
+  endtask
 
   task automatic test_math();
     $display("Doing test");
