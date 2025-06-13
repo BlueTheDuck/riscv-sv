@@ -145,7 +145,10 @@ module Cpu (
   );
 
   always_ff @(posedge clk, negedge rst) begin
-    if (rst == 0) ir <= 0;
+    if (rst == 0) begin
+      ir <= 0;
+      current_pc <= 0;
+    end
     else if (load_next_instruction && instruction_manager.readdatavalid) begin
       ir <= instruction_manager.agent_to_host;
       current_pc <= next_pc;
