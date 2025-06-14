@@ -14,6 +14,28 @@ typedef struct packed {
   bit [4:0]  rd;
   bit [6:0]  op;
 } op_i_t;
+typedef struct packed {
+  bit imm12;
+  bit [5:0] imm10_5;
+  bit [4:0] rs2;
+  bit [4:0] rs1;
+  bit [2:0] f3;
+  bit [3:0] imm4_1;
+  bit imm11;
+  bit [6:0] op;
+} op_b_t;
+function automatic op_b_t op_b(bit [6:0] op, bit [2:0] f3, bit [4:0] rs1, bit [4:0] rs2, word imm);
+  return op_b_t'{
+    imm12: imm[12],
+    imm11: imm[11],
+    imm10_5: imm[10:5],
+    imm4_1: imm[4:1],
+    rs2: rs2,
+    rs1: rs1,
+    f3: f3,
+    op: op
+  };
+endfunction
 
 module CpuTb ();
 
@@ -54,6 +76,7 @@ module CpuTb ();
         test_core();
         test_math();
         test_jumps();
+        test_branches();
         $display("All tests passed successfully.");
         #1 $finish;
       end
@@ -141,6 +164,58 @@ module CpuTb ();
         );
     assert (cpu.regs.regs[1] == 'hC + 4)
     else $error("Assertion failed: expected x1 == 0xC, but got 0x%08h", cpu.regs.regs[1]);
+  endtask
+
+  task automatic test_branches();
+    $display("[%4t] Testing branch instructions", $time);
+    reset();
+    $display("[%4t] BLTZ not taken", $time);
+    cpu.regs.set_registers('{1: 5, default: 0});
+    cpu.execute_opcode(op_b(
+                       // BLTZ x1, +0xC
+                       7'b1100011,
+                       4,  // BLT
+                       1,  // rs1
+                       0,  // rs2
+                       'hC  // imm
+                       ));
+    @(posedge clk);
+    @(posedge clk);
+    #1
+      assert (cpu.next_pc == 'h4)
+      else $error("Assertion failed: expected next_pc == 0x4, but got 0x%08h", cpu.next_pc);
+
+    $display("[%4t] BLTZ taken", $time);
+    cpu.execute_opcode(op_b(
+                       // BGEZ x1, +0xC
+                       7'b1100011,
+                       'b101,  // BGE (~BLT)
+                       1,  // rs1
+                       0,  // rs2
+                       'hC  // imm
+                       ));
+    @(posedge clk);
+    @(posedge clk);
+    #1
+      assert (cpu.next_pc == 'h10)
+      else $error("Assertion failed: expected next_pc == 0x10, but got 0x%08h", cpu.next_pc);
+
+
+    $display("[%4t] BEQ taken", $time);
+    cpu.execute_opcode(op_b(
+                       // BEQZ, x2, 0xFFFFFFF0 (back to 0x0)
+                       7'b1100011,
+                       3'b000,  // BEQ
+                       2,  // rs1
+                       0,  // rs2
+                       -16  // PC - 16 => next_pc = 0
+                       ));
+    @(posedge clk);
+    @(posedge clk);
+    #1
+      assert (cpu.next_pc == 0)
+      else $error("Assertion failed: expected next_pc == 0x0, but got 0x%08h", cpu.next_pc);
+
   endtask
 
   task automatic reset();
