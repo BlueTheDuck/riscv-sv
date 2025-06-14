@@ -1,14 +1,18 @@
 .section .text
 .global strlen
+
+# size_t strlen(const char *s) {
+#   const char *e = s;
+#   while (*e != '\0') e++;
+#   return e - s;
+# }
 strlen:
-        mv      a4,a0
-        lbu     a5,0(a0)
-        li      a0,0
-        beq     a5,zero,.L1
-.L2:
-        addi    a0,a0,1
-        add     a5,a4,a0
-        lbu     a5,0(a5)
-        bne     a5,zero,.L2
-.L1:
-        ret
+  mv   a5, a0
+1:
+  lbu  a4, 0(a5)
+  bnez a4, 2f
+  sub  a0, a5, a0
+  ret
+2:
+  addi a5, a5, 1
+  j    1b
