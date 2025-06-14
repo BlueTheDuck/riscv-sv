@@ -18,7 +18,7 @@ LD_FLAGS := -Trv32.x
 SRCS ?= $(wildcard *.c) $(wildcard *.s)
 OBJS := $(patsubst %.c,%.o,$(filter %.c,$(SRCS))) $(patsubst %.s,%.o,$(filter %.s,$(SRCS)))
 
-bsp.o: C_FLAGS += -Oz -Wl,--no-relax
+bsp.o: C_FLAGS += -Oz
 main.o: C_FLAGS += -O1
 
 %.o: %.s
