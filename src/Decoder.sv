@@ -38,7 +38,7 @@ module Decoder (
   assign rtype_imm = 0;
   assign itype_imm = {{20{ir[31]}}, ir[31:20]};
   assign stype_imm = {{20{ir[31]}}, ir[31:25], ir[11:7]};
-  assign btype_imm = {{19{ir[31]}}, ir[31], ir[7], ir[30:25], ir[11:8], 1'b0};
+  assign btype_imm = {{20{ir[31]}}, ir[7], ir[30:25], ir[11:8], 1'b0};
   assign utype_imm = {ir[31:12], 12'b0};
   assign jtype_imm = {{12{ir[31]}}, ir[19:12], ir[20], ir[30:25], ir[24:21], 1'b0};
   assign f3 = f3_valid ? ir[14:12] : 0;

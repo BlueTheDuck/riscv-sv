@@ -29,7 +29,8 @@ package Types;
     ALU_SET_LESS_THAN,
     ALU_XOR,
     ALU_AND,
-    ALU_OR
+    ALU_OR,
+    ALU_EQ
   } alu_op_t;
   typedef struct packed {
     alu_op_t operation;

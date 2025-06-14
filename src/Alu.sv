@@ -28,6 +28,9 @@ module Alu (
       ALU_XOR: out = in_a ^ in_b;
       ALU_AND: out = in_a & in_b;
       ALU_OR: out = in_a | in_b;
+      ALU_EQ: begin
+        out = (in_a == in_b) ? 1 : 0;
+      end
       default: begin
         out = 0;
       end

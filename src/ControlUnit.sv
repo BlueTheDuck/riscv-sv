@@ -199,20 +199,16 @@ module ControlUnit (
       endcase
     end else if (active.alu_op_from == ALU_OP_LOGIC_FROM_OPCODE) begin
       var comparison_op_t comp_op = f3;
-      priority casez ({
-        comp_op.mode, comp_op.unsignedness
-      })
-        2'b0?:   alu_mode.operation = ALU_SUB;
-        2'b10: begin
-          alu_mode.operation  = ALU_SET_LESS_THAN;
-          alu_mode.signedness = SIGNED;
-        end
-        2'b11: begin
-          alu_mode.operation  = ALU_SET_LESS_THAN;
-          alu_mode.signedness = UNSIGNED;
-        end
-        default: $fatal;
-      endcase
+      if (comp_op.mode == 1'b0) begin
+        alu_mode.operation = ALU_EQ;
+        alu_mode.signedness = UNSIGNED;
+      end else if (comp_op.mode == 1'b1 && comp_op.unsignedness == 1'b0) begin
+        alu_mode.operation  = ALU_SET_LESS_THAN;
+        alu_mode.signedness = SIGNED;
+      end else if (comp_op.mode == 1'b1 && comp_op.unsignedness == 1'b1) begin
+        alu_mode.operation  = ALU_SET_LESS_THAN;
+        alu_mode.signedness = UNSIGNED;
+      end else $fatal;
     end else $fatal;
   end
 

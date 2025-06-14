@@ -110,7 +110,7 @@ module Cpu (
       .out(rd_in)
   );
 
-  assign alu_cmp_result = (alu_out != 0) == ins_f3[0];
+  assign alu_cmp_result = (alu_out != 0) ^ ins_f3[0];
   Mux #(
       .INS(2)
   ) pc_step_src (
