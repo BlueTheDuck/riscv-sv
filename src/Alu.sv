@@ -1,18 +1,16 @@
 import Types::*;
 
 module Alu (
-    input bit [31:0] in_a,
-    input bit [31:0] in_b,
+    input int32_t in_a,
+    input int32_t in_b,
     input alu_mode_t mode,
-    output bit [31:0] out
+    output int32_t out
 );
   bit [4:0] displacement;
   assign displacement = in_b[4:0];
 
   always_comb begin
-    unique casez ({
-      mode.operation
-    })
+    unique case (mode.operation)
       ALU_NULL: out = 0;
       ALU_ADD: out = in_a + in_b;
       ALU_SUB: out = in_a - in_b;
@@ -20,20 +18,15 @@ module Alu (
       ALU_SHIFT_RIGHT_LOGICAL: out = unsigned'(in_a) >> displacement;
       ALU_SHIFT_RIGHT_ARITHMETIC: out = signed'(in_a) >>> displacement;
       ALU_SET_LESS_THAN: begin
-        if(mode.signedness == SIGNED)
-          out = signed'(in_a) < signed'(in_b) ? 1 : 0;
-        else
-          out = unsigned'(in_a) < unsigned'(in_b) ? 1 : 0;
+        if (mode.signedness == SIGNED) out = signed'(in_a) < signed'(in_b) ? 1 : 0;
+        else out = unsigned'(in_a) < unsigned'(in_b) ? 1 : 0;
       end
       ALU_XOR: out = in_a ^ in_b;
       ALU_AND: out = in_a & in_b;
       ALU_OR: out = in_a | in_b;
-      ALU_EQ: begin
-        out = (in_a == in_b) ? 1 : 0;
-      end
-      default: begin
-        out = 0;
-      end
+      ALU_EQ: out = (in_a == in_b) ? 1 : 0;
+
+      default: out = 0;
     endcase
   end
 `ifdef __DUMP_STATE__
@@ -55,5 +48,5 @@ module Alu (
       default: return "UNKNOWN";
     endcase
   endfunction
-`endif // __DUMP_STATE__
+`endif  // __DUMP_STATE__
 endmodule

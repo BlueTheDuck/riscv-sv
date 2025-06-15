@@ -1,10 +1,8 @@
-import Types::triword;
-
 interface AvalonMmRead;
-  triword address;
+  tri32_t address;
   logic [3:0] byteenable;
   logic read;
-  triword agent_to_host;
+  tri32_t agent_to_host;
 
   // Wait-State Signals
   logic waitrequest;

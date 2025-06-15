@@ -1,16 +1,17 @@
 import Types::*;
 
 module ControlUnit (
-    input logic clk,
-    input logic rst,
-    input logic [6:0] opcode,
-    input logic [2:0] f3,
-    input logic [6:0] f7,
+    input bit clk,
+    input bit rst,
+    input bit [6:0] opcode,
+    input bit [2:0] f3,
+    input bit [6:0] f7,
 
     input bit stall,
 
     output ins_ctrl_signals_t active,
     output alu_mode_t alu_mode,
+    output bit invert_logic_result,
 
     output bit load_ir,
     output bit en_iaddr,
@@ -124,7 +125,8 @@ module ControlUnit (
     CU_STATE_LOAD_IR,
     CU_STATE_EXEC,
     CU_STATE_WRITEBACK
-  } state, next_state;
+  }
+      state, next_state;
 
   always_ff @(posedge clk, negedge rst) begin
     if (rst == 0) begin
@@ -175,25 +177,17 @@ module ControlUnit (
       alu_mode.operation = ALU_ADD;
     end else if (active.alu_op_from == ALU_OP_ARITHMETIC_FROM_OPCODE) begin
       unique case (f3)
-        0:
-        if (opcode == OP_ALUI) alu_mode.operation = ALU_ADD;
-        else if (opcode == OP_ALU) begin
-          if (f7 == 'h00) alu_mode.operation = ALU_ADD;
-          else if (f7 == 'h20) alu_mode.operation = ALU_SUB;
-        end
-        1: alu_mode.operation = ALU_SHIFT_LEFT_LOGICAL;
-        2: begin
-          alu_mode.operation  = ALU_SET_LESS_THAN;
-          alu_mode.signedness = SIGNED;
-        end
-        3: begin
-          alu_mode.operation  = ALU_SET_LESS_THAN;
-          alu_mode.signedness = UNSIGNED;
-        end
+        0: if (opcode == OP_ALU && f7 == 'h20) alu_mode.operation = ALU_SUB;
+           else alu_mode.operation = ALU_ADD;
+        1: alu_mode = '{operation: ALU_SHIFT_LEFT_LOGICAL, signedness: UNSIGNED};
+        2: alu_mode = '{operation: ALU_SET_LESS_THAN, signedness: SIGNED};
+        3: alu_mode = '{operation: ALU_SET_LESS_THAN, signedness: UNSIGNED};
         4: alu_mode.operation = ALU_XOR;
-        5:
-        if (f7 == 'h00) alu_mode.operation = ALU_SHIFT_RIGHT_LOGICAL;
-        else if (f7 == 'h20) alu_mode.operation = ALU_SHIFT_RIGHT_ARITHMETIC;
+        5: priority case (f7)
+             'h00: alu_mode = '{operation: ALU_SHIFT_RIGHT_LOGICAL, signedness: UNSIGNED};
+             'h20: alu_mode = '{operation: ALU_SHIFT_RIGHT_ARITHMETIC, signedness: SIGNED};
+             default: $fatal;
+           endcase
         6: alu_mode.operation = ALU_OR;
         7: alu_mode.operation = ALU_AND;
       endcase
@@ -201,14 +195,13 @@ module ControlUnit (
       var comparison_op_t comp_op = f3;
       if (comp_op.mode == 1'b0) begin
         alu_mode.operation = ALU_EQ;
-        alu_mode.signedness = UNSIGNED;
-      end else if (comp_op.mode == 1'b1 && comp_op.unsignedness == 1'b0) begin
-        alu_mode.operation  = ALU_SET_LESS_THAN;
-        alu_mode.signedness = SIGNED;
-      end else if (comp_op.mode == 1'b1 && comp_op.unsignedness == 1'b1) begin
-        alu_mode.operation  = ALU_SET_LESS_THAN;
-        alu_mode.signedness = UNSIGNED;
-      end else $fatal;
+      end else begin
+        alu_mode = '{
+            operation: ALU_SET_LESS_THAN,
+            signedness: (comp_op.unsignedness == 0) ? SIGNED : UNSIGNED
+        };
+      end
+      invert_logic_result = comp_op.negate;
     end else $fatal;
   end
 

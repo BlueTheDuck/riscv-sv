@@ -33,7 +33,7 @@ module Cpu (
   bit comp_result;
   bit mu_read_valid, mu_write_done;
   alu_mode_t alu_mode;
-  bit alu_cmp_result;
+  bit alu_out_zero, invert_logic_result;
 
   /* Data path */
   word alu_in_a, alu_in_b, alu_out;
@@ -65,6 +65,7 @@ module Cpu (
       .f7(ins_f7),
       .active(ins_signals),
       .alu_mode(alu_mode),
+      .invert_logic_result(invert_logic_result),
 
       .load_ir(load_next_instruction),
       .en_iaddr(en_iaddr),
@@ -101,6 +102,7 @@ module Cpu (
       .mode(alu_mode),
       .out (alu_out)
   );
+  assign alu_out_zero = alu_out == 0;
 
   Mux #(
       .INS(4)
@@ -110,11 +112,10 @@ module Cpu (
       .out(rd_in)
   );
 
-  assign alu_cmp_result = (alu_out != 0) ^ ins_f3[0];
   Mux #(
       .INS(2)
   ) pc_step_src (
-      .sel(alu_cmp_result && ins_signals.branching),
+      .sel((!alu_out_zero ^ invert_logic_result) && ins_signals.branching),
       .in ('{instruction_len, ins_imm}),
       .out(pc_step)
   );
@@ -183,6 +184,7 @@ module Cpu (
 `endif  // __DUMP_STATE__
 
   task automatic execute_opcode(word opcode);
+    $display("[%4t] execute_opcode(%08x)", $time, opcode);
     ir <= opcode;
     cu.set_execute();
   endtask
