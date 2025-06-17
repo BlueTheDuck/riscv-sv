@@ -26,14 +26,14 @@ typedef struct packed {
 } op_b_t;
 function automatic op_b_t op_b(bit [6:0] op, bit [2:0] f3, bit [4:0] rs1, bit [4:0] rs2, word imm);
   return op_b_t'{
-    imm12: imm[12],
-    imm11: imm[11],
-    imm10_5: imm[10:5],
-    imm4_1: imm[4:1],
-    rs2: rs2,
-    rs1: rs1,
-    f3: f3,
-    op: op
+      imm12: imm[12],
+      imm11: imm[11],
+      imm10_5: imm[10:5],
+      imm4_1: imm[4:1],
+      rs2: rs2,
+      rs1: rs1,
+      f3: f3,
+      op: op
   };
 endfunction
 
@@ -88,44 +88,51 @@ module CpuTb ();
   end
 
   task automatic test_core();
-    $display("[%5t] Testing core functionality", $time);
-  
-    $display("[%5t] Assert initial reset", $time);
-    reset();
-    #1 assert (cpu.ir == 0)
-    else $error("Assertion failed: expected ir == 0, but got %0d", cpu.ir);
-    assert (cpu.current_pc == 0)
-    else $error("Assertion failed: expected current_pc == 0, but got %0d", cpu.current_pc);
-    assert (cpu.next_pc == 0)
-    else $error("Assertion failed: expected next_pc == 0, but got %0d", cpu.next_pc);
+    $display("[%4t] Testing core functionality", $time);
 
+    $display("[%4t] Assert initial reset", $time);
+    // Reset is asynchronous
+    rst <= 1;
+    #1 rst <= 0;
+    #1 rst <= 1;
+    assert (cpu.ir == 0 && cpu.current_pc == 0 && cpu.next_pc == 0 && cpu.cu.state == 0 && cpu.cu.next_state == 1)
+    else begin
+      $display("Expected ir == 0, got %0d", cpu.ir);
+      $display("Expected current_pc == 0, got %0d", cpu.current_pc);
+      $display("Expected next_pc == 0, got %0d", cpu.next_pc);
+      $display("Expected control unit state == 0, got %0d", cpu.cu.state);
+      $display("Expected control unit next state == 1, got %0d", cpu.cu.next_state);
+      $error("Initial reset failed");
+    end
 
-    $display("[%5t] Assert reset after running", $time);
+    $display("[%4t] Assert reset after running", $time);
     repeat (10) @(posedge clk);
     reset();
-    #1 assert (cpu.ir == 0)
-    else $error("Assertion failed: expected ir == 0, but got %0d", cpu.ir);
-    assert (cpu.current_pc == 0)
-    else $error("Assertion failed: expected current_pc == 0, but got %0d", cpu.current_pc);
-    assert (cpu.next_pc == 0)
-    else $error("Assertion failed: expected next_pc == 0, but got %0d", cpu.next_pc);
+    #1;
+    assert (cpu.ir == 0 && cpu.current_pc == 0 && cpu.next_pc == 0)
+    else begin
+      $display("Expected ir == 0, got %0d", cpu.ir);
+      $display("Expected current_pc == 0, got %0d", cpu.current_pc);
+      $display("Expected next_pc == 0, got %0d", cpu.next_pc);
+      $error("Reset after running failed");
+    end
   endtask
 
   task automatic test_math();
-    $display("Doing test");
-    cpu.execute_opcode(op_i_t
-'{imm: 1, rs1: 10, f3: 0, rd: 11, op: OP_ALUI});  // x11 = x10 + 1
+    $display("[%4t] Testing math operations", $time);
+    reset();
     cpu.regs.set_registers('{10: 4, default: 0});
+    cpu.execute_opcode(op_i_t'{imm: 1, rs1: 10, f3: 0, rd: 11, op: OP_ALUI});  // x11 = x10 + 1
 
     @(posedge clk);
-    #1
-      assert (cpu.regs.regs[11] == 0)
-      else $error("Assertion failed: expected x11 == 0, but got %0d", cpu.regs.regs[11]);
+    #1;
+    assert (cpu.regs.regs[11] == 0)
+    else $error("expected x11 == 0, but got %0d", cpu.regs.regs[11]);
 
     @(posedge clk);
-    #1
-      assert (cpu.regs.regs[11] == 5)
-      else $error("Assertion failed: expected x11 == 5, but got %0d", cpu.regs.regs[11]);
+    #1;
+    assert (cpu.regs.regs[11] == 5)
+    else $error("expected x11 == 5, but got %0d", cpu.regs.regs[11]);
 
 
 
@@ -147,21 +154,21 @@ module CpuTb ();
     @(posedge clk);
     @(posedge clk);
     @(posedge clk);
-    cpu.execute_opcode(op_i_t'{imm: ('h20<<5)|1, rs1: 10, f3: 5, rd: 12, op: OP_ALUI});  // x12 = x10 >>> 1
+    cpu.execute_opcode(op_i_t'{imm: ('h20 << 5) | 1, rs1: 10, f3: 5, rd: 12, op: OP_ALUI});  // x12 = x10 >>> 1
     @(posedge clk);
     @(posedge clk);
-    cpu.execute_opcode(op_i_t'{imm: ('h20<<5)|1, rs1: 11, f3: 5, rd: 13, op: OP_ALUI});  // x12 = x10 >>> 1
+    cpu.execute_opcode(op_i_t'{imm: ('h20 << 5) | 1, rs1: 11, f3: 5, rd: 13, op: OP_ALUI});  // x12 = x10 >>> 1
     @(posedge clk);
     @(posedge clk);
 
     #1;
-    assert (cpu.regs.regs[11] == 32'h7FFFFFFF)
-    else $error("Assertion failed: expected x11 == -1, but got %08x", cpu.regs.regs[11]);
-    assert (cpu.regs.regs[12] == 32'hFFFFFFFF)
-    else $error("Assertion failed: expected x12 == 0x7FFFFFFF, but got %08x", cpu.regs.regs[12]);
-    assert (cpu.regs.regs[13] == 32'h3FFFFFFF)
-    else $error("Assertion failed: expected x13 == 0x3FFFFFFF, but got %08x", cpu.regs.regs[13]);
-
+    assert (cpu.regs.regs[11] == 32'h7FFFFFFF && cpu.regs.regs[12] == 32'hFFFFFFFF && cpu.regs.regs[13] == 32'h3FFFFFFF)
+    else begin
+      $display("expected x11 == -1, got %08x", cpu.regs.regs[11]);
+      $display("expected x12 == 0x7FFFFFFF, got %08x", cpu.regs.regs[12]);
+      $display("expected x13 == 0x3FFFFFFF, got %08x", cpu.regs.regs[13]);
+      $error("Shift test failed");
+    end
 
     $display("Test completed successfully.");
   endtask
@@ -173,32 +180,31 @@ module CpuTb ();
     $display("[%04t] J 0xC", $time);
     @(posedge clk);
     @(posedge clk);
-    #1
-      assert (cpu.next_pc == 'hC)
-      else $error("Assertion failed: expected next_pc == 0xC, but got 0x%08h", cpu.next_pc);
+    #1;
+    assert (cpu.next_pc == 'hC)
+    else $error("expected next_pc == 0xC, got 0x%08h", cpu.next_pc);
     @(posedge clk);
     @(posedge clk);
-    #1
-      assert (cpu.current_pc == 'hC)
-      else $error("Assertion failed: expected current_pc == 0xC, but got 0x%08h", cpu.current_pc);
+    #1;
+    assert (cpu.current_pc == 'hC)
+    else $error("expected current_pc == 0xC, got 0x%08h", cpu.current_pc);
     @(posedge clk);
 
     cpu.execute_opcode(op_i_t'{imm: 'h18, rs1: 0, f3: 0, rd: 1, op: OP_JALR});
     @(posedge clk);
     @(posedge clk);
-    #1
-      assert (cpu.next_pc == 'h18)
-      else $error("Assertion failed: expected next_pc == 0x18, but got 0x%08h", cpu.next_pc);
+    #1;
+    assert (cpu.next_pc == 'h18)
+    else $error("expected next_pc == 0x18, got 0x%08h", cpu.next_pc);
     @(posedge clk);
     @(posedge clk);
-    #1
-      assert (cpu.current_pc == 'h18)
-      else
-        $error(
-            "Assertion failed: expected current_pc == 0x00000018, but got 0x%08h", cpu.current_pc
-        );
-    assert (cpu.regs.regs[1] == 'hC + 4)
-    else $error("Assertion failed: expected x1 == 0xC, but got 0x%08h", cpu.regs.regs[1]);
+    #1;
+    assert (cpu.current_pc == 'h18 && cpu.regs.regs[1] == 'hC + 4)
+    else begin
+      $display("expected current_pc == 0x00000018, got 0x%08h", cpu.current_pc);
+      $display("expected x1 == 0xC, got 0x%08h", cpu.regs.regs[1]);
+      $error("JALR test failed");
+    end
   endtask
 
   task automatic test_branches();
@@ -216,9 +222,9 @@ module CpuTb ();
                        ));
     @(posedge clk);
     @(posedge clk);
-    #1
-      assert (cpu.next_pc == 'h4)
-      else $error("Assertion failed: expected next_pc == 0x4, but got 0x%08h", cpu.next_pc);
+    #1;
+    assert (cpu.next_pc == 'h4)
+    else $error("expected next_pc == 0x4, got 0x%08h", cpu.next_pc);
 
     $display("[%4t] BLTZ taken", $time);
     cpu.execute_opcode(op_b(
@@ -231,9 +237,9 @@ module CpuTb ();
                        ));
     @(posedge clk);
     @(posedge clk);
-    #1
-      assert (cpu.next_pc == 'h10)
-      else $error("Assertion failed: expected next_pc == 0x10, but got 0x%08h", cpu.next_pc);
+    #1;
+    assert (cpu.next_pc == 'h10)
+    else $error("expected next_pc == 0x10, got 0x%08h", cpu.next_pc);
 
 
     $display("[%4t] BEQ taken", $time);
@@ -247,10 +253,9 @@ module CpuTb ();
                        ));
     @(posedge clk);
     @(posedge clk);
-    #1
-      assert (cpu.next_pc == 0)
-      else $error("Assertion failed: expected next_pc == 0x0, but got 0x%08h", cpu.next_pc);
-
+    #1;
+    assert (cpu.next_pc == 0)
+    else $error("expected next_pc == 0x0, got 0x%08h", cpu.next_pc);
   endtask
 
   task automatic reset();
