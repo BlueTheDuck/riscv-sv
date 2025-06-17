@@ -179,13 +179,13 @@ module ControlUnit (
       unique case (f3)
         0: if (opcode == OP_ALU && f7 == 'h20) alu_mode.operation = ALU_SUB;
            else alu_mode.operation = ALU_ADD;
-        1: alu_mode = '{operation: ALU_SHIFT_LEFT_LOGICAL, signedness: UNSIGNED};
+        1: alu_mode = '{operation: ALU_SHIFT_LEFT, signedness: UNSIGNED};
         2: alu_mode = '{operation: ALU_SET_LESS_THAN, signedness: SIGNED};
         3: alu_mode = '{operation: ALU_SET_LESS_THAN, signedness: UNSIGNED};
         4: alu_mode.operation = ALU_XOR;
         5: priority casex (f7)
-             7'b00xxxxx: alu_mode = '{operation: ALU_SHIFT_RIGHT_LOGICAL, signedness: UNSIGNED};
-             7'b01xxxxx: alu_mode = '{operation: ALU_SHIFT_RIGHT_ARITHMETIC, signedness: SIGNED};
+             7'b00xxxxx: alu_mode = '{operation: ALU_SHIFT_RIGHT, signedness: UNSIGNED};
+             7'b01xxxxx: alu_mode = '{operation: ALU_SHIFT_RIGHT, signedness: SIGNED};
              default: $fatal;
            endcase
         6: alu_mode.operation = ALU_OR;

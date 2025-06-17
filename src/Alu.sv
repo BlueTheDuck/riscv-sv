@@ -14,12 +14,23 @@ module Alu (
       ALU_NULL: out = 0;
       ALU_ADD: out = in_a + in_b;
       ALU_SUB: out = in_a - in_b;
-      ALU_SHIFT_LEFT_LOGICAL: out = in_a << displacement;
-      ALU_SHIFT_RIGHT_LOGICAL: out = unsigned'(in_a) >> displacement;
-      ALU_SHIFT_RIGHT_ARITHMETIC: out = signed'(in_a) >>> displacement;
+      ALU_SHIFT_LEFT: begin
+        if(mode.signedness == UNSIGNED)
+          out = in_a << displacement;
+        else
+          $fatal("ALU_SHIFT_LEFT arithmetic (signed) is not supported");
+      end
+      ALU_SHIFT_RIGHT: begin
+        if (mode.signedness == UNSIGNED)
+          out = unsigned'(in_a) >> displacement;
+        else
+          out = signed'(in_a) >>> displacement;
+      end
       ALU_SET_LESS_THAN: begin
-        if (mode.signedness == SIGNED) out = signed'(in_a) < signed'(in_b) ? 1 : 0;
-        else out = unsigned'(in_a) < unsigned'(in_b) ? 1 : 0;
+        if (mode.signedness == SIGNED)
+          out = signed'(in_a) < signed'(in_b) ? 1 : 0;
+        else
+          out = unsigned'(in_a) < unsigned'(in_b) ? 1 : 0;
       end
       ALU_XOR: out = in_a ^ in_b;
       ALU_AND: out = in_a & in_b;
@@ -38,9 +49,8 @@ module Alu (
       ALU_NULL: return "NULL";
       ALU_ADD: return "+";
       ALU_SUB: return "-";
-      ALU_SHIFT_LEFT_LOGICAL: return "<<";
-      ALU_SHIFT_RIGHT_LOGICAL: return ">>";
-      ALU_SHIFT_RIGHT_ARITHMETIC: return ">>>";
+      ALU_SHIFT_LEFT: return "<<";
+      ALU_SHIFT_RIGHT: return ">>";
       ALU_SET_LESS_THAN: return "<";
       ALU_XOR: return "^";
       ALU_AND: return "&";
