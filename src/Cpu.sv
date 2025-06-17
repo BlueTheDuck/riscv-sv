@@ -159,7 +159,7 @@ module Cpu (
 
   assign instruction_manager.byteenable = 4'b1111;
   assign instruction_manager.read = en_iaddr;
-  assign instruction_manager.address = en_iaddr ? next_pc : 0;
+  assign instruction_manager.address = next_pc;
 
   assign data_stall = !(mu_read_valid && mu_write_done);
   assign instruction_stall = (instruction_manager.read && !instruction_manager.readdatavalid)
