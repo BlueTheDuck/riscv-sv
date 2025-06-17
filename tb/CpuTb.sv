@@ -127,7 +127,42 @@ module CpuTb ();
       assert (cpu.regs.regs[11] == 5)
       else $error("Assertion failed: expected x11 == 5, but got %0d", cpu.regs.regs[11]);
 
-    $display("Test passed: x11 is %0d", cpu.regs.regs[11]);
+
+
+    // Test shifts
+    //         -1 >>> 1 = -1
+    // 0xFFFFFFFF >>  1 = 0x7FFFFFFF
+    // Input: x10 = 0xFFFFFFFF
+    // Code:
+    //   SRL x11, x10, 1 # Test shift right logical
+    //   SRA x12, x10, 1 # Test shift right arithmetic, carry in 1
+    //   SRA x13, x11, 1 # Test shift right arithmetic, carry in 0
+    // Expected: x10 = 0xFFFFFFFF / -1
+    //           x11 = -1
+    //           x12 = 0x7FFFFFFF
+    //           x13 = 0x3FFFFFFF
+    cpu.regs.set_registers('{10: -1, default: 0});
+
+    cpu.execute_opcode(op_i_t'{imm: 1, rs1: 10, f3: 5, rd: 11, op: OP_ALUI});  // x11 = x10 >> 1
+    @(posedge clk);
+    @(posedge clk);
+    @(posedge clk);
+    cpu.execute_opcode(op_i_t'{imm: ('h20<<5)|1, rs1: 10, f3: 5, rd: 12, op: OP_ALUI});  // x12 = x10 >>> 1
+    @(posedge clk);
+    @(posedge clk);
+    cpu.execute_opcode(op_i_t'{imm: ('h20<<5)|1, rs1: 11, f3: 5, rd: 13, op: OP_ALUI});  // x12 = x10 >>> 1
+    @(posedge clk);
+    @(posedge clk);
+
+    #1;
+    assert (cpu.regs.regs[11] == 32'h7FFFFFFF)
+    else $error("Assertion failed: expected x11 == -1, but got %08x", cpu.regs.regs[11]);
+    assert (cpu.regs.regs[12] == 32'hFFFFFFFF)
+    else $error("Assertion failed: expected x12 == 0x7FFFFFFF, but got %08x", cpu.regs.regs[12]);
+    assert (cpu.regs.regs[13] == 32'h3FFFFFFF)
+    else $error("Assertion failed: expected x13 == 0x3FFFFFFF, but got %08x", cpu.regs.regs[13]);
+
+
     $display("Test completed successfully.");
   endtask
 
