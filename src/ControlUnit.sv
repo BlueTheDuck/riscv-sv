@@ -128,23 +128,24 @@ module ControlUnit (
   }
       state, next_state;
 
+  always_comb begin
+    priority case (state)
+      CU_STATE_ADDR_OUT: next_state = CU_STATE_LOAD_IR;
+      CU_STATE_LOAD_IR: next_state = CU_STATE_EXEC;
+      CU_STATE_EXEC: next_state = CU_STATE_WRITEBACK;
+      CU_STATE_WRITEBACK: next_state = CU_STATE_ADDR_OUT;
+      default: next_state = CU_STATE_ADDR_OUT;
+    endcase
+  end
+
   always_ff @(posedge clk, negedge rst) begin
     if (rst == 0) begin
       state <= CU_STATE_NULL;
-      next_state <= CU_STATE_ADDR_OUT;
     end else begin
       if (stall) begin
         state <= state;
-        next_state <= next_state;
       end else begin
         state <= next_state;
-        priority case (next_state)
-          CU_STATE_ADDR_OUT: next_state <= CU_STATE_LOAD_IR;
-          CU_STATE_LOAD_IR: next_state <= CU_STATE_EXEC;
-          CU_STATE_EXEC: next_state <= CU_STATE_WRITEBACK;
-          CU_STATE_WRITEBACK: next_state <= CU_STATE_ADDR_OUT;
-          default: next_state <= CU_STATE_NULL;
-        endcase
       end
     end
   end
@@ -206,8 +207,7 @@ module ControlUnit (
   end
 
   task automatic set_execute();
-    state <= CU_STATE_NULL;
-    next_state <= CU_STATE_EXEC;
+    state <= CU_STATE_EXEC;
   endtask
 
 `ifdef PRETTY_WAVETRACE

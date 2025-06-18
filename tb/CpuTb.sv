@@ -123,12 +123,7 @@ module CpuTb ();
     reset();
     cpu.regs.set_registers('{10: 4, default: 0});
     cpu.execute_opcode(op_i_t'{imm: 1, rs1: 10, f3: 0, rd: 11, op: OP_ALUI});  // x11 = x10 + 1
-
-    @(posedge clk);
-    #1;
-    assert (cpu.regs.regs[11] == 0)
-    else $error("expected x11 == 0, but got %0d", cpu.regs.regs[11]);
-
+  
     @(posedge clk);
     #1;
     assert (cpu.regs.regs[11] == 5)
@@ -179,7 +174,6 @@ module CpuTb ();
     cpu.execute_opcode(op_i_t'{imm: 'hC, rs1: 0, f3: 0, rd: 0, op: OP_JALR});
     $display("[%04t] J 0xC", $time);
     @(posedge clk);
-    @(posedge clk);
     #1;
     assert (cpu.next_pc == 'hC)
     else $error("expected next_pc == 0xC, got 0x%08h", cpu.next_pc);
@@ -188,7 +182,6 @@ module CpuTb ();
     #1;
     assert (cpu.current_pc == 'hC)
     else $error("expected current_pc == 0xC, got 0x%08h", cpu.current_pc);
-    @(posedge clk);
 
     cpu.execute_opcode(op_i_t'{imm: 'h18, rs1: 0, f3: 0, rd: 1, op: OP_JALR});
     @(posedge clk);
@@ -202,7 +195,7 @@ module CpuTb ();
     assert (cpu.current_pc == 'h18 && cpu.regs.regs[1] == 'hC + 4)
     else begin
       $display("expected current_pc == 0x00000018, got 0x%08h", cpu.current_pc);
-      $display("expected x1 == 0xC, got 0x%08h", cpu.regs.regs[1]);
+      $display("expected x1 == %08x, got 0x%08h", 'hC + 4, cpu.regs.regs[1]);
       $error("JALR test failed");
     end
   endtask
