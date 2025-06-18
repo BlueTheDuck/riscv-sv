@@ -1,8 +1,8 @@
 interface AvalonMmRead;
-  tri32_t address;
+  Types::tri32_t address;
   logic [3:0] byteenable;
   logic read;
-  tri32_t agent_to_host;
+  Types::tri32_t agent_to_host;
 
   // Wait-State Signals
   logic waitrequest;

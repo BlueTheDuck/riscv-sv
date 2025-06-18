@@ -1,16 +1,16 @@
-import Types::*;
-
 module Decoder (
-    input word ir,
+    input Types::uint32_t ir,
     output int len,
     output bit [6:0] opcode,
     output bit [4:0] rd,
     output bit [4:0] rs1,
     output bit [4:0] rs2,
-    output word imm,
+    output Types::uint32_t imm,
     output bit [2:0] f3,
     output bit [6:0] f7
 );
+  import Types::*;
+
   typedef enum {
     NULL,
     FORMAT_R,
@@ -21,12 +21,12 @@ module Decoder (
     FORMAT_J
   } format_t;
 
-  bit signed [31:0] rtype_imm;
-  bit signed [31:0] itype_imm;
-  bit signed [31:0] stype_imm;
-  bit signed [31:0] btype_imm;
-  bit signed [31:0] utype_imm;
-  bit signed [31:0] jtype_imm;
+  int32_t rtype_imm;
+  int32_t itype_imm;
+  int32_t stype_imm;
+  int32_t btype_imm;
+  int32_t utype_imm;
+  int32_t jtype_imm;
 
   bit enable_rd, enable_rs1, enable_rs2;
   bit f3_valid, f7_valid;

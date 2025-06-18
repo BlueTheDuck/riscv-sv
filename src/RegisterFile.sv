@@ -8,9 +8,9 @@ module RegisterFile (
     input logic [4:0] rs1_sel,
     input logic [4:0] rs2_sel,
 
-    input  logic [31:0] rd_in,
-    output logic [31:0] rs1_out,
-    output logic [31:0] rs2_out,
+    input  Types::uint32_t rd_in,
+    output Types::uint32_t rs1_out,
+    output Types::uint32_t rs2_out,
 
     input bit rd_w
 );

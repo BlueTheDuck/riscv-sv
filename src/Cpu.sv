@@ -1,6 +1,5 @@
 `default_nettype none
 
-import Types::*;
 
 module Cpu (
     input logic clk,
@@ -9,13 +8,14 @@ module Cpu (
     AvalonMmRw.Host   data_manager,
     AvalonMmRead.Host instruction_manager,
 
-    output word debug_current_pc,
-    output word debug_instruction
+    output Types::uint32_t debug_current_pc,
+    output Types::uint32_t debug_instruction
 );
+  import Types::*;
 
   /* Registers */
   initial ir = 'x;
-  word ir;
+  uint32_t ir;
 
   /* Control signals */
   bit load_next_instruction;
@@ -30,19 +30,18 @@ module Cpu (
   bit data_stall, instruction_stall;
   /// Delay execution
   bit stall;
-  bit comp_result;
   bit mu_read_valid, mu_write_done;
   alu_mode_t alu_mode;
   bit alu_out_zero, invert_logic_result;
 
   /* Data path */
-  word alu_in_a, alu_in_b, alu_out;
-  word rd_in, rs1_out, rs2_out;
-  word current_pc, next_pc;
-  word ins_imm;
-  int instruction_len;
-  int pc_step;
-  word data_from_bus;
+  int32_t alu_in_a, alu_in_b, alu_out;
+  uint32_t rd_in, rs1_out, rs2_out;
+  int32_t current_pc, next_pc;
+  int32_t ins_imm;
+  int32_t instruction_len;
+  int32_t pc_step;
+  uint32_t data_from_bus;
 
   wire [6:0] opcode;
   Decoder decoder (
@@ -124,7 +123,7 @@ module Cpu (
       .clk(clk),
       .rst(rst),
       .enabled(enable_pc_counter && !stall),
-      .load(ins_signals.pc_src == PC_SRC_ALU && cu.write_back_stage),
+      .load(ins_signals.pc_src == PC_SRC_ALU && write_back_stage),
       .step(pc_step),
       .in(alu_out),
       .next_pc(next_pc)

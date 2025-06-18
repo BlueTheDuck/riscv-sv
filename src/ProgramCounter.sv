@@ -1,11 +1,11 @@
 module ProgramCounter (
-    input logic clk,
-    input logic rst,
+    input bit clk,
+    input bit rst,
     input bit enabled,
     input bit load,
-    input logic [31:0] step,
-    input logic [31:0] in,
-    output logic [31:0] next_pc
+    input Types::int32_t step,
+    input Types::int32_t in,
+    output Types::int32_t out
 );
   initial begin
     next_pc = 'x;

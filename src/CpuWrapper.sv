@@ -1,27 +1,25 @@
-import Types::word;
-
 module CpuWrapper (
     input bit clk,
     input bit rst,
 
-    output word        avalon_data_manager_address,
+    output Types::uint32_t        avalon_data_manager_address,
     output bit   [3:0] avalon_data_manager_byteenable,
     input  logic       avalon_data_manager_waitrequest,
     output bit         avalon_data_manager_write,
-    output word        avalon_data_manager_host_to_agent,
+    output Types::uint32_t        avalon_data_manager_host_to_agent,
     output bit         avalon_data_manager_read,
-    input  word        avalon_data_manager_agent_to_host,
+    input  Types::uint32_t        avalon_data_manager_agent_to_host,
     input  bit         avalon_data_manager_readdatavalid,
 
-    output word        avalon_instruction_manager_address,
+    output Types::uint32_t        avalon_instruction_manager_address,
     output bit   [3:0] avalon_instruction_manager_byteenable,
     input  logic       avalon_instruction_manager_waitrequest,
     output bit         avalon_instruction_manager_read,
-    input  word        avalon_instruction_manager_agent_to_host,
+    input  Types::uint32_t        avalon_instruction_manager_agent_to_host,
     input  bit         avalon_instruction_manager_readdatavalid,
 
-    output word debug_current_pc,
-    output word debug_instruction
+    output Types::uint32_t debug_current_pc,
+    output Types::uint32_t debug_instruction
 );
   AvalonMmRw data_manager ();
   AvalonMmRead instruction_manager ();

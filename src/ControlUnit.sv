@@ -1,5 +1,3 @@
-import Types::*;
-
 module ControlUnit (
     input bit clk,
     input bit rst,
@@ -9,8 +7,8 @@ module ControlUnit (
 
     input bit stall,
 
-    output ins_ctrl_signals_t active,
-    output alu_mode_t alu_mode,
+    output Types::ins_ctrl_signals_t active,
+    output Types::alu_mode_t alu_mode,
     output bit invert_logic_result,
 
     output bit load_ir,
@@ -18,6 +16,8 @@ module ControlUnit (
     output bit en_pc_counter,
     output bit write_back_stage
 );
+  import Types::*;
+
   localparam ins_ctrl_signals_t null_cu = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_REG,
@@ -119,6 +119,9 @@ module ControlUnit (
       branching: 0
   };
 
+  comparison_op_t comp_op;
+  assign comp_op = f3;
+
   enum int {
     CU_STATE_NULL,
     CU_STATE_ADDR_OUT,
@@ -178,22 +181,23 @@ module ControlUnit (
       alu_mode.operation = ALU_ADD;
     end else if (active.alu_op_from == ALU_OP_ARITHMETIC_FROM_OPCODE) begin
       unique case (f3)
-        0: if (opcode == OP_ALU && f7 == 'h20) alu_mode.operation = ALU_SUB;
-           else alu_mode.operation = ALU_ADD;
+        0:
+        if (opcode == OP_ALU && f7 == 'h20) alu_mode.operation = ALU_SUB;
+        else alu_mode.operation = ALU_ADD;
         1: alu_mode = '{operation: ALU_SHIFT_LEFT, signedness: UNSIGNED};
         2: alu_mode = '{operation: ALU_SET_LESS_THAN, signedness: SIGNED};
         3: alu_mode = '{operation: ALU_SET_LESS_THAN, signedness: UNSIGNED};
         4: alu_mode.operation = ALU_XOR;
-        5: priority casex (f7)
-             7'b00xxxxx: alu_mode = '{operation: ALU_SHIFT_RIGHT, signedness: UNSIGNED};
-             7'b01xxxxx: alu_mode = '{operation: ALU_SHIFT_RIGHT, signedness: SIGNED};
-             default: $fatal;
-           endcase
+        5:
+        priority casez (f7)
+          7'b00?????: alu_mode = '{operation: ALU_SHIFT_RIGHT, signedness: UNSIGNED};
+          7'b01?????: alu_mode = '{operation: ALU_SHIFT_RIGHT, signedness: SIGNED};
+          default: $fatal;
+        endcase
         6: alu_mode.operation = ALU_OR;
         7: alu_mode.operation = ALU_AND;
       endcase
     end else if (active.alu_op_from == ALU_OP_LOGIC_FROM_OPCODE) begin
-      var comparison_op_t comp_op = f3;
       if (comp_op.mode == 1'b0) begin
         alu_mode.operation = ALU_EQ;
       end else begin

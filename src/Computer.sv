@@ -1,8 +1,8 @@
-import Types::*;
-
 `define KB(n) (n * 1024)
 
 module Computer ();
+  import Types::*;
+
   bit clk, rst;
   word debug_current_pc, debug_instruction;
 

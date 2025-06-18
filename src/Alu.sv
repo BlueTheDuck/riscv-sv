@@ -1,11 +1,11 @@
-import Types::*;
-
 module Alu (
-    input int32_t in_a,
-    input int32_t in_b,
-    input alu_mode_t mode,
-    output int32_t out
+    input Types::int32_t in_a,
+    input Types::int32_t in_b,
+    input Types::alu_mode_t mode,
+    output Types::int32_t out
 );
+  import Types::*;
+
   bit [4:0] displacement;
   assign displacement = in_b[4:0];
 
