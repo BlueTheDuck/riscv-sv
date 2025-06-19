@@ -4,9 +4,9 @@ import Types::word;
 
 module RegisterFile (
     input bit clk,
-    input logic [4:0] rd_sel,
-    input logic [4:0] rs1_sel,
-    input logic [4:0] rs2_sel,
+    input logic [4:0] rd_index,
+    input logic [4:0] rs1_index,
+    input logic [4:0] rs2_index,
 
     input  Types::uint32_t rd_in,
     output Types::uint32_t rs1_out,
@@ -24,12 +24,12 @@ module RegisterFile (
     end
   endgenerate
 
-  assign rs1_out = rs1_sel != 0 ? regs[rs1_sel] : 0;
-  assign rs2_out = rs2_sel != 0 ? regs[rs2_sel] : 0;
+  assign rs1_out = rs1_index != 0 ? regs[rs1_index] : 0;
+  assign rs2_out = rs2_index != 0 ? regs[rs2_index] : 0;
 
   always_ff @(negedge clk) begin
-    if (rd_w && rd_sel != 0) begin
-      regs[rd_sel] <= rd_in;
+    if (rd_w && rd_index != 0) begin
+      regs[rd_index] <= rd_in;
     end
   end
 

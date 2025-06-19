@@ -12,7 +12,7 @@ module ControlUnit (
     output bit invert_logic_result,
 
     output bit load_ir,
-    output bit en_iaddr,
+    output bit fetch_next_instruction,
     output bit en_pc_counter,
     output bit write_back_stage
 );
@@ -152,7 +152,7 @@ module ControlUnit (
       end
     end
   end
-  assign en_iaddr = state == CU_STATE_ADDR_OUT || state == CU_STATE_LOAD_IR;
+  assign fetch_next_instruction = state == CU_STATE_ADDR_OUT || state == CU_STATE_LOAD_IR;
   assign load_ir = state == CU_STATE_LOAD_IR;
   assign en_pc_counter = state == CU_STATE_EXEC;
   assign write_back_stage = state == CU_STATE_WRITEBACK;

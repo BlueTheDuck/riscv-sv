@@ -19,63 +19,64 @@ module Cpu (
 
   /* Control signals */
   bit load_next_instruction;
-  bit en_iaddr;
-  bit enable_pc_counter;
+  bit fetch_next_instruction;
+  bit increment_pc;
   ins_ctrl_signals_t ins_signals;
-  bit [4:0] rd_sel, rs1_sel, rs2_sel;
-  bit [2:0] ins_f3;
-  bit [6:0] ins_f7;
+  bit invert_logic_result;
+  alu_mode_t alu_mode;
+  bit [6:0] opcode;
+  bit [4:0] rd_index, rs1_index, rs2_index;
+  bit [2:0] instruction_f3;
+  bit [6:0] instruction_f7;
   bit enable_rd_store, write_back_stage;
   /// Which bus are we waiting a response on?
   bit data_stall, instruction_stall;
   /// Delay execution
   bit stall;
   bit mu_read_valid, mu_write_done;
-  alu_mode_t alu_mode;
-  bit alu_out_zero, invert_logic_result;
 
   /* Data path */
   int32_t alu_in_a, alu_in_b, alu_out;
+  bit alu_out_zero;
   uint32_t rd_in, rs1_out, rs2_out;
   int32_t current_pc, next_pc;
-  int32_t ins_imm;
-  int32_t instruction_len;
-  int32_t pc_step;
+  int32_t  instruction_immediate;
+  int32_t  instruction_len;
+  int32_t  pc_step;
   uint32_t data_from_bus;
 
-  wire [6:0] opcode;
   Decoder decoder (
       .ir(ir),
       .len(instruction_len),
       .opcode(opcode),
-      .rd(rd_sel),
-      .rs1(rs1_sel),
-      .rs2(rs2_sel),
-      .imm(ins_imm),
-      .f3(ins_f3),
-      .f7(ins_f7)
+      .rd(rd_index),
+      .rs1(rs1_index),
+      .rs2(rs2_index),
+      .imm(instruction_immediate),
+      .f3(instruction_f3),
+      .f7(instruction_f7)
   );
   ControlUnit cu (
       .clk(clk),
       .rst(rst),
       .stall(stall),
       .opcode(opcode),
-      .f3(ins_f3),
-      .f7(ins_f7),
+      .f3(instruction_f3),
+      .f7(instruction_f7),
       .active(ins_signals),
       .alu_mode(alu_mode),
       .invert_logic_result(invert_logic_result),
 
       .load_ir(load_next_instruction),
-      .en_iaddr(en_iaddr),
-      .en_pc_counter(enable_pc_counter),
+      .fetch_next_instruction(fetch_next_instruction),
+      .en_pc_counter(increment_pc),
       .write_back_stage(write_back_stage)
   );
   RegisterFile regs (
       .clk(clk),
-      .rd_sel(rd_sel),
-      .rs1_sel(rs1_sel),
-      .rs2_sel(rs2_sel),
+      .rd_index(rd_index),
+      .rs1_index(rs1_index),
+      .rs2_index(rs2_index),
       .rd_in(rd_in),
       .rs1_out(rs1_out),
       .rs2_out(rs2_out),
@@ -92,7 +93,7 @@ module Cpu (
       .INS(2)
   ) alu_input_b_selector (
       .sel(ins_signals.alu_in_b),
-      .in ('{rs2_out, ins_imm}),
+      .in ('{rs2_out, instruction_immediate}),
       .out(alu_in_b)
   );
   Alu alu (
@@ -101,7 +102,6 @@ module Cpu (
       .mode(alu_mode),
       .out (alu_out)
   );
-  assign alu_out_zero = alu_out == 0;
 
   Mux #(
       .INS(4)
@@ -115,18 +115,18 @@ module Cpu (
       .INS(2)
   ) pc_step_src (
       .sel((!alu_out_zero ^ invert_logic_result) && ins_signals.branching),
-      .in ('{instruction_len, ins_imm}),
+      .in ('{instruction_len, instruction_immediate}),
       .out(pc_step)
   );
 
   ProgramCounter pc (
       .clk(clk),
       .rst(rst),
-      .enabled(enable_pc_counter && !stall),
+      .increment(increment_pc && !stall),
       .load(ins_signals.pc_src == PC_SRC_ALU && write_back_stage),
       .step(pc_step),
       .in(alu_out),
-      .next_pc(next_pc)
+      .out(next_pc)
   );
 
   MemoryUnit mu (
@@ -135,8 +135,8 @@ module Cpu (
       .read(ins_signals.dbus_re),
       .write(ins_signals.dbus_we),
       .address(alu_out),
-      .len(ins_f3[1:0]),
-      .zero_extend((ins_f3 & 3'b100) != 0),
+      .len(instruction_f3[1:0]),
+      .zero_extend((instruction_f3 & 3'b100) != 0),
       .to_bus(rs2_out),
       .from_bus(data_from_bus),
       .read_valid(mu_read_valid),
@@ -148,16 +148,19 @@ module Cpu (
     if (rst == 0) begin
       ir <= 0;
       current_pc <= 0;
-    end
-    else if (load_next_instruction && instruction_manager.readdatavalid) begin
+    end else if (load_next_instruction && instruction_manager.readdatavalid) begin
       ir <= instruction_manager.agent_to_host;
       current_pc <= next_pc;
-      $display("IR <= %08x FROM %08x", (instruction_manager.agent_to_host), (instruction_manager.address));
-    end else ir <= ir;
+      $display("IR <= %08x FROM %08x", instruction_manager.agent_to_host,
+               instruction_manager.address);
+    end else begin
+      ir <= ir;
+      current_pc <= current_pc;
+    end
   end
 
   assign instruction_manager.byteenable = 4'b1111;
-  assign instruction_manager.read = en_iaddr;
+  assign instruction_manager.read = fetch_next_instruction;
   assign instruction_manager.address = next_pc;
 
   assign data_stall = !(mu_read_valid && mu_write_done);
@@ -166,6 +169,8 @@ module Cpu (
   assign stall = data_stall || instruction_stall;
 
   assign enable_rd_store = ins_signals.dest_reg_from != DEST_REG_FROM_NONE;
+
+  assign alu_out_zero = alu_out == 0;
 
   function word swap_endianness(input word idata);
     return {idata[7:0], idata[15:8], idata[23:16], idata[31:24]};
