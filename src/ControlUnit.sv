@@ -7,120 +7,92 @@ module ControlUnit (
 
     input bit stall,
 
-    output Types::ins_ctrl_signals_t active,
+    output Types::data_path_map_t data_path,
     output Types::alu_mode_t alu_mode,
     output bit invert_logic_result,
+    output bit dbus_we,
+    output bit is_branch,
 
-    output bit load_ir,
     output bit fetch_next_instruction,
+    output bit load_ir,
     output bit en_pc_counter,
     output bit write_back_stage
 );
   import Types::*;
 
-  localparam ins_ctrl_signals_t null_cu = '{
+  localparam data_path_map_t null_cu = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_REG,
       alu_op_from: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_NONE,
-      pc_src: PC_SRC_NEXT_PC,
-      dbus_we: 0,
-      dbus_re: 0,
-      branching: 0
+      pc_src: PC_SRC_NEXT_PC
   };
-  localparam ins_ctrl_signals_t aluimm = '{
+  localparam data_path_map_t aluimm = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_IMM,
       alu_op_from: ALU_OP_ARITHMETIC_FROM_OPCODE,
       dest_reg_from: DEST_REG_FROM_ALU,
-      pc_src: PC_SRC_NEXT_PC,
-      dbus_we: 0,
-      dbus_re: 0,
-      branching: 0
+      pc_src: PC_SRC_NEXT_PC
   };
-  localparam ins_ctrl_signals_t alu = '{
+  localparam data_path_map_t alu = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_REG,
       alu_op_from: ALU_OP_ARITHMETIC_FROM_OPCODE,
       dest_reg_from: DEST_REG_FROM_ALU,
-      pc_src: PC_SRC_NEXT_PC,
-      dbus_we: 0,
-      dbus_re: 0,
-      branching: 0
+      pc_src: PC_SRC_NEXT_PC
   };
-  localparam ins_ctrl_signals_t load = '{
+  localparam data_path_map_t load = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_IMM,
       alu_op_from: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_MEM,
-      pc_src: PC_SRC_NEXT_PC,
-      dbus_we: 0,
-      dbus_re: 1,
-      branching: 0
+      pc_src: PC_SRC_NEXT_PC
   };
-  localparam ins_ctrl_signals_t store = '{
+  localparam data_path_map_t store = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_IMM,
       alu_op_from: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_NONE,
-      pc_src: PC_SRC_NEXT_PC,
-      dbus_we: 1,
-      dbus_re: 0,
-      branching: 0
+      pc_src: PC_SRC_NEXT_PC
   };
-  localparam ins_ctrl_signals_t branch = '{
+  localparam data_path_map_t branch = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_REG,
       alu_op_from: ALU_OP_LOGIC_FROM_OPCODE,
       dest_reg_from: DEST_REG_FROM_NONE,
-      pc_src: PC_SRC_NEXT_PC,
-      dbus_we: 1'b0,
-      dbus_re: 1'b0,
-      branching: 1
+      pc_src: PC_SRC_NEXT_PC
   };
-  localparam ins_ctrl_signals_t jal = '{
+  localparam data_path_map_t jal = '{
       alu_in_a: ALU_IN_A_PC,
       alu_in_b: ALU_IN_B_IMM,
       alu_op_from: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_PC,
-      pc_src: PC_SRC_ALU,
-      dbus_we: 0,
-      dbus_re: 0,
-      branching: 0
+      pc_src: PC_SRC_ALU
   };
-  localparam ins_ctrl_signals_t jalr = '{
+  localparam data_path_map_t jalr = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_IMM,
       alu_op_from: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_PC,
-      pc_src: PC_SRC_ALU,
-      dbus_we: 0,
-      dbus_re: 0,
-      branching: 0
+      pc_src: PC_SRC_ALU
   };
-  localparam ins_ctrl_signals_t lui = '{
+  localparam data_path_map_t lui = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_IMM,
       alu_op_from: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_ALU,
-      pc_src: PC_SRC_NEXT_PC,
-      dbus_we: 0,
-      dbus_re: 0,
-      branching: 0
+      pc_src: PC_SRC_NEXT_PC
   };
-  localparam ins_ctrl_signals_t auipc = '{
+  localparam data_path_map_t auipc = '{
       alu_in_a: ALU_IN_A_PC,
       alu_in_b: ALU_IN_B_IMM,
       alu_op_from: ALU_OP_FIXED_ADD,
       dest_reg_from: DEST_REG_FROM_ALU,
-      pc_src: PC_SRC_NEXT_PC,
-      dbus_we: 0,
-      dbus_re: 0,
-      branching: 0
+      pc_src: PC_SRC_NEXT_PC
   };
 
   comparison_op_t comp_op;
-  assign comp_op = f3;
+
 
   enum int {
     CU_STATE_NULL,
@@ -128,18 +100,9 @@ module ControlUnit (
     CU_STATE_LOAD_IR,
     CU_STATE_EXEC,
     CU_STATE_WRITEBACK
-  }
-      state, next_state;
+  } state;
 
-  always_comb begin
-    priority case (state)
-      CU_STATE_ADDR_OUT: next_state = CU_STATE_LOAD_IR;
-      CU_STATE_LOAD_IR: next_state = CU_STATE_EXEC;
-      CU_STATE_EXEC: next_state = CU_STATE_WRITEBACK;
-      CU_STATE_WRITEBACK: next_state = CU_STATE_ADDR_OUT;
-      default: next_state = CU_STATE_ADDR_OUT;
-    endcase
-  end
+  initial state = CU_STATE_NULL;
 
   always_ff @(posedge clk, negedge rst) begin
     if (rst == 0) begin
@@ -147,8 +110,14 @@ module ControlUnit (
     end else begin
       if (stall) begin
         state <= state;
-      end else begin
-        state <= next_state;
+      end else begin : STATE_MACHINE
+        priority case (state)
+          CU_STATE_ADDR_OUT: state <= CU_STATE_LOAD_IR;
+          CU_STATE_LOAD_IR: state <= CU_STATE_EXEC;
+          CU_STATE_EXEC: state <= CU_STATE_WRITEBACK;
+          CU_STATE_WRITEBACK: state <= CU_STATE_ADDR_OUT;
+          default: state <= CU_STATE_ADDR_OUT;
+        endcase
       end
     end
   end
@@ -159,27 +128,32 @@ module ControlUnit (
 
   always_comb begin
     case (opcode)
-      OP_ALU:    active = alu;
-      OP_ALUI:   active = aluimm;
-      OP_LOAD:   active = load;
-      OP_STORE:  active = store;
-      OP_BRANCH: active = branch;
-      OP_JAL:    active = jal;
-      OP_JALR:   active = jalr;
-      OP_LUI:    active = lui;
-      OP_AUIPC:  active = auipc;
-      default:   active = null_cu;
+      OP_ALU:    data_path = alu;
+      OP_ALUI:   data_path = aluimm;
+      OP_LOAD:   data_path = load;
+      OP_STORE:  data_path = store;
+      OP_BRANCH: data_path = branch;
+      OP_JAL:    data_path = jal;
+      OP_JALR:   data_path = jalr;
+      OP_LUI:    data_path = lui;
+      OP_AUIPC:  data_path = auipc;
+      default:   data_path = null_cu;
     endcase
-    if (active == null_cu && state == CU_STATE_EXEC) begin
+    if (data_path == null_cu && state == CU_STATE_EXEC) begin
       $display("Error executing opcode %07b", opcode);
       $fatal;
     end
   end
 
+  // Special cases
+  assign dbus_we = opcode == OP_STORE;
+  assign is_branch  = opcode == OP_BRANCH;
+  assign comp_op = f3;
+
   always_comb begin : ALU_OP_DECODER
-    if (active.alu_op_from == ALU_OP_FIXED_ADD) begin
+    if (data_path.alu_op_from == ALU_OP_FIXED_ADD) begin
       alu_mode.operation = ALU_ADD;
-    end else if (active.alu_op_from == ALU_OP_ARITHMETIC_FROM_OPCODE) begin
+    end else if (data_path.alu_op_from == ALU_OP_ARITHMETIC_FROM_OPCODE) begin
       unique case (f3)
         0:
         if (opcode == OP_ALU && f7 == 'h20) alu_mode.operation = ALU_SUB;
@@ -197,7 +171,7 @@ module ControlUnit (
         6: alu_mode.operation = ALU_OR;
         7: alu_mode.operation = ALU_AND;
       endcase
-    end else if (active.alu_op_from == ALU_OP_LOGIC_FROM_OPCODE) begin
+    end else if (data_path.alu_op_from == ALU_OP_LOGIC_FROM_OPCODE) begin
       if (comp_op.mode == 1'b0) begin
         alu_mode.operation = ALU_EQ;
       end else begin
@@ -222,14 +196,12 @@ module ControlUnit (
   dest_reg_from_t P_dest_reg_from;
   pc_src_t P_pc_src;
   bit P_dbus_we;
-  bit P_dbus_re;
-  assign P_alu_in_a = active.alu_in_a;
-  assign P_alu_in_b = active.alu_in_b;
-  assign P_alu_op_from = active.alu_op_from;
-  assign P_dest_reg_from = active.dest_reg_from;
-  assign P_pc_src = active.pc_src;
-  assign P_dbus_we = active.dbus_we;
-  assign P_dbus_re = active.dbus_re;
+  assign P_alu_in_a = data_path.alu_in_a;
+  assign P_alu_in_b = data_path.alu_in_b;
+  assign P_alu_op_from = data_path.alu_op_from;
+  assign P_dest_reg_from = data_path.dest_reg_from;
+  assign P_pc_src = data_path.pc_src;
+  assign P_dbus_we = data_path.dbus_we;
   // verilator lint_on UNUSEDSIGNAL
 `endif
 endmodule

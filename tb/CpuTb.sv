@@ -68,7 +68,7 @@ module CpuTb ();
   );
 
   initial begin
-    $dumpfile("cpu_tb.vcd");
+    $dumpfile("logs/cpu_tb.vcd");
     $dumpvars(0, CpuTb);
     $display("Starting CPU Testbench...");
     fork
@@ -95,13 +95,12 @@ module CpuTb ();
     rst <= 1;
     #1 rst <= 0;
     #1 rst <= 1;
-    assert (cpu.ir == 0 && cpu.current_pc == 0 && cpu.next_pc == 0 && cpu.cu.state == 0 && cpu.cu.next_state == 1)
+    assert (cpu.ir == 0 && cpu.current_pc == 0 && cpu.next_pc == 0 && cpu.cu.state == 0)
     else begin
       $display("Expected ir == 0, got %0d", cpu.ir);
       $display("Expected current_pc == 0, got %0d", cpu.current_pc);
       $display("Expected next_pc == 0, got %0d", cpu.next_pc);
       $display("Expected control unit state == 0, got %0d", cpu.cu.state);
-      $display("Expected control unit next state == 1, got %0d", cpu.cu.next_state);
       $error("Initial reset failed");
     end
 

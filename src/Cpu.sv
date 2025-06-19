@@ -21,8 +21,9 @@ module Cpu (
   bit load_next_instruction;
   bit fetch_next_instruction;
   bit increment_pc;
-  ins_ctrl_signals_t ins_signals;
+  data_path_map_t data_path;
   bit invert_logic_result;
+  bit branch, dbus_we;
   alu_mode_t alu_mode;
   bit [6:0] opcode;
   bit [4:0] rd_index, rs1_index, rs2_index;
@@ -63,9 +64,11 @@ module Cpu (
       .opcode(opcode),
       .f3(instruction_f3),
       .f7(instruction_f7),
-      .active(ins_signals),
+      .data_path(data_path),
       .alu_mode(alu_mode),
       .invert_logic_result(invert_logic_result),
+      .dbus_we(dbus_we),
+      .is_branch(branch),
 
       .load_ir(load_next_instruction),
       .fetch_next_instruction(fetch_next_instruction),
@@ -85,14 +88,14 @@ module Cpu (
   Mux #(
       .INS(2)
   ) alu_input_a_selector (
-      .sel(ins_signals.alu_in_a),
+      .sel(data_path.alu_in_a),
       .in ('{rs1_out, current_pc}),
       .out(alu_in_a)
   );
   Mux #(
       .INS(2)
   ) alu_input_b_selector (
-      .sel(ins_signals.alu_in_b),
+      .sel(data_path.alu_in_b),
       .in ('{rs2_out, instruction_immediate}),
       .out(alu_in_b)
   );
@@ -103,10 +106,12 @@ module Cpu (
       .out (alu_out)
   );
 
+  // CHECK: dest_reg_from_t
+  //        the order defined ther MUST match the order of the Mux inputs
   Mux #(
       .INS(4)
   ) destination_register_data_selector (
-      .sel(ins_signals.dest_reg_from),
+      .sel(data_path.dest_reg_from),
       .in ('{0, alu_out, data_from_bus, next_pc}),
       .out(rd_in)
   );
@@ -114,7 +119,7 @@ module Cpu (
   Mux #(
       .INS(2)
   ) pc_step_src (
-      .sel((!alu_out_zero ^ invert_logic_result) && ins_signals.branching),
+      .sel((!alu_out_zero ^ invert_logic_result) && branch),
       .in ('{instruction_len, instruction_immediate}),
       .out(pc_step)
   );
@@ -123,7 +128,7 @@ module Cpu (
       .clk(clk),
       .rst(rst),
       .increment(increment_pc && !stall),
-      .load(ins_signals.pc_src == PC_SRC_ALU && write_back_stage),
+      .load(data_path.pc_src == PC_SRC_ALU && write_back_stage),
       .step(pc_step),
       .in(alu_out),
       .out(next_pc)
@@ -132,8 +137,8 @@ module Cpu (
   MemoryUnit mu (
       .clk(clk),
       .rst(rst),
-      .read(ins_signals.dbus_re),
-      .write(ins_signals.dbus_we),
+      .read(data_path.dest_reg_from == DEST_REG_FROM_MEM),
+      .write(dbus_we),
       .address(alu_out),
       .len(instruction_f3[1:0]),
       .zero_extend((instruction_f3 & 3'b100) != 0),
@@ -168,7 +173,7 @@ module Cpu (
                           || (instruction_manager.read && instruction_manager.waitrequest);
   assign stall = data_stall || instruction_stall;
 
-  assign enable_rd_store = ins_signals.dest_reg_from != DEST_REG_FROM_NONE;
+  assign enable_rd_store = data_path.dest_reg_from != DEST_REG_FROM_NONE;
 
   assign alu_out_zero = alu_out == 0;
 
@@ -180,9 +185,9 @@ module Cpu (
   task automatic dump_state();
     $display("[%4d] CPU State:", $time());
     $display(" - PC := %08X", current_pc);
-    $display(" - Data bus A: %s", ins_signals.alu_in_a == 0 ? "REG" : "PC");
-    $display(" - Data bus B: %s", ins_signals.alu_in_b == 0 ? "REG" : "IMM");
-    $display(" - Data bus C: %d", ins_signals.dest_reg_from);
+    $display(" - Data bus A: %s", data_path.alu_in_a == 0 ? "REG" : "PC");
+    $display(" - Data bus B: %s", data_path.alu_in_b == 0 ? "REG" : "IMM");
+    $display(" - Data bus C: %d", data_path.dest_reg_from);
     alu.dump_state();
   endtask
 `endif  // __DUMP_STATE__
