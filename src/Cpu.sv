@@ -119,7 +119,7 @@ module Cpu (
       .out(pc_step)
   );
 
-  ProgramCounter pc (
+  Counter pc (
       .clk(clk),
       .rst(rst),
       .increment(increment_pc && !stall),
