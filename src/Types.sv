@@ -71,8 +71,6 @@ package Types;
     alu_op_from_t alu_op_from;
     dest_reg_from_t dest_reg_from;
     pc_src_t pc_src;
-    bit dbus_we, dbus_re;
-    bit branching;
-  } ins_ctrl_signals_t;
+  } data_path_map_t;
 
 endpackage
