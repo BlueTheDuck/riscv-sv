@@ -85,20 +85,18 @@ module Cpu (
       .rs2_out(rs2_out),
       .rd_w(enable_rd_store && write_back_stage)
   );
-  Mux #(
-      .INS(2)
-  ) alu_input_a_selector (
-      .sel(data_path.alu_in_a),
-      .in ('{rs1_out, current_pc}),
-      .out(alu_in_a)
-  );
-  Mux #(
-      .INS(2)
-  ) alu_input_b_selector (
-      .sel(data_path.alu_in_b),
-      .in ('{rs2_out, instruction_immediate}),
-      .out(alu_in_b)
-  );
+  always_comb begin : ALU_INPUT_A_MUX
+    unique case (data_path.alu_in_a)
+      ALU_IN_A_REG: alu_in_a = rs1_out;
+      ALU_IN_A_PC:  alu_in_a = current_pc;
+    endcase
+  end
+  always_comb begin : ALU_INPUT_B_MUX
+    unique case (data_path.alu_in_b)
+      ALU_IN_B_REG: alu_in_b = rs2_out;
+      ALU_IN_B_IMM: alu_in_b = instruction_immediate;
+    endcase
+  end
   Alu alu (
       .in_a(alu_in_a),
       .in_b(alu_in_b),
@@ -106,23 +104,23 @@ module Cpu (
       .out (alu_out)
   );
 
-  // CHECK: dest_reg_from_t
-  //        the order defined ther MUST match the order of the Mux inputs
-  Mux #(
-      .INS(4)
-  ) destination_register_data_selector (
-      .sel(data_path.dest_reg_from),
-      .in ('{0, alu_out, data_from_bus, next_pc}),
-      .out(rd_in)
-  );
+  always_comb begin : DEST_REG_MUX
+    unique case (data_path.dest_reg_from)
+      DEST_REG_FROM_NONE: rd_in = 0;
+      DEST_REG_FROM_ALU:  rd_in = alu_out;
+      DEST_REG_FROM_MEM:  rd_in = data_from_bus;
+      DEST_REG_FROM_PC:   rd_in = next_pc;
+    endcase
+  end
 
-  Mux #(
-      .INS(2)
-  ) pc_step_src (
-      .sel((!alu_out_zero ^ invert_logic_result) && branch),
-      .in ('{instruction_len, instruction_immediate}),
-      .out(pc_step)
-  );
+  always_comb begin : PC_STEP_MUX
+    bit take_branch = !(alu_out == 0) ^ invert_logic_result;
+    if (take_branch && branch) begin
+      pc_step = instruction_immediate;
+    end else begin
+      pc_step = instruction_len;
+    end
+  end
 
   Counter pc (
       .clk(clk),
