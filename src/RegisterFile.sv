@@ -1,7 +1,3 @@
-import Types::word;
-
-`default_nettype none
-
 module RegisterFile (
     input bit clk,
     input logic [4:0] rd_index,
@@ -14,15 +10,9 @@ module RegisterFile (
 
     input bit rd_w
 );
-  word regs[32];
+  import Types::*;
 
-  initial regs[0] = 0;
-  generate
-    genvar i;
-    for (i = 1; i < 32; i++) begin : GEN_REG_INIT
-      initial regs[i] = 'x;
-    end
-  endgenerate
+  word regs[32];
 
   assign rs1_out = rs1_index != 0 ? regs[rs1_index] : 0;
   assign rs2_out = rs2_index != 0 ? regs[rs2_index] : 0;

@@ -102,8 +102,6 @@ module ControlUnit (
     CU_STATE_WRITEBACK
   } state;
 
-  initial state = CU_STATE_NULL;
-
   always_ff @(posedge clk, negedge rst) begin
     if (rst == 0) begin
       state <= CU_STATE_NULL;
