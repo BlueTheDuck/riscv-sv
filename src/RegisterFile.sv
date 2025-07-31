@@ -12,8 +12,9 @@ module RegisterFile (
 );
   import Types::*;
 
-  word regs[32];
+  word regs[31:1];
 
+  // TODO: maybe use net type that drives zero?
   assign rs1_out = rs1_index != 0 ? regs[rs1_index] : 0;
   assign rs2_out = rs2_index != 0 ? regs[rs2_index] : 0;
 
@@ -73,9 +74,7 @@ module RegisterFile (
   // verilator lint_on UNUSEDSIGNAL
 `endif
 
-  task automatic set_registers(word [31:0] values[32]);
-    for (int i = 0; i < 32; i++) begin
-      regs[i] = values[i];
-    end
+  task automatic set_registers(word values[31:1]);
+    regs = values;
   endtask
 endmodule
