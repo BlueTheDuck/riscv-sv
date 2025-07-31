@@ -17,8 +17,10 @@ module Alu (
       ALU_SHIFT_LEFT: begin
         if(mode.signedness == UNSIGNED)
           out = in_a << displacement;
-        else
+        else begin
+          out = 0; // Latch prevention
           $fatal("ALU_SHIFT_LEFT arithmetic (signed) is not supported");
+        end
       end
       ALU_SHIFT_RIGHT: begin
         if (mode.signedness == UNSIGNED)
