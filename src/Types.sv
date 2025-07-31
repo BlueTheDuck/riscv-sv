@@ -39,7 +39,11 @@ package Types;
     signedness_t signedness;
   } alu_mode_t;
 
-  typedef struct packed {bit mode, unsignedness, negate;} comparison_op_t;
+  typedef struct packed {
+    bit mode;
+    signedness_t signedness;
+    bit negate;
+  } comparison_op_t;
 
   typedef enum bit {
     ALU_IN_A_REG = 1'b0,

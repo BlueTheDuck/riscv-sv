@@ -177,7 +177,7 @@ module ControlUnit (
       end else begin
         alu_mode = '{
             operation: ALU_SET_LESS_THAN,
-            signedness: (comp_op.unsignedness == 0) ? SIGNED : UNSIGNED
+            signedness: comp_op.signedness
         };
       end
       invert_logic_result = comp_op.negate;
