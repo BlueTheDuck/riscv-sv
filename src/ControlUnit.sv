@@ -151,6 +151,11 @@ module ControlUnit (
   assign comp_op = f3;
 
   always_comb begin : ALU_OP_DECODER
+
+    // Latch prevention
+    alu_mode = '{operation: ALU_NULL, signedness: UNSIGNED};
+    invert_logic_result = 0;
+
     if (data_path.alu_op_from == ALU_OP_FIXED_ADD) begin
       alu_mode.operation = ALU_ADD;
     end else if (data_path.alu_op_from == ALU_OP_ARITHMETIC_FROM_OPCODE) begin
