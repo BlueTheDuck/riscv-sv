@@ -37,7 +37,6 @@ module Cpu (
 
   /* Data path */
   int32_t alu_in_a, alu_in_b, alu_out;
-  bit alu_out_zero;
   uint32_t rd_in, rs1_out, rs2_out;
   int32_t current_pc, next_pc;
   int32_t  instruction_immediate;
@@ -172,8 +171,6 @@ module Cpu (
   assign stall = data_stall || instruction_stall;
 
   assign enable_rd_store = data_path.dest_reg_from != DEST_REG_FROM_NONE;
-
-  assign alu_out_zero = alu_out == 0;
 
   function word swap_endianness(input word idata);
     return {idata[7:0], idata[15:8], idata[23:16], idata[31:24]};
