@@ -13,8 +13,6 @@ module Counter (
     input Types::int32_t in,
     output Types::int32_t out
 );
-  initial out = 'x;
-
   always_ff @(posedge clk or negedge rst) begin
     if (rst == 0) begin
       out <= 0;

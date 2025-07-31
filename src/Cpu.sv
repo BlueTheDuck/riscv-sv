@@ -14,7 +14,6 @@ module Cpu (
   import Types::*;
 
   /* Registers */
-  initial ir = 'x;
   uint32_t ir;
 
   /* Control signals */
@@ -114,7 +113,8 @@ module Cpu (
   end
 
   always_comb begin : PC_STEP_MUX
-    bit take_branch = !(alu_out == 0) ^ invert_logic_result;
+    var bit take_branch;
+	  take_branch = !(alu_out == 0) ^ invert_logic_result;
     if (take_branch && branch) begin
       pc_step = instruction_immediate;
     end else begin
