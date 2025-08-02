@@ -17,7 +17,16 @@ RUN git clone --branch 2025.05.22 https://github.com/riscv-collab/riscv-gnu-tool
 
 WORKDIR /opt/riscv-gnu-toolchain/
 
-RUN ./configure --prefix=/opt/riscv --with-arch=rv32gc --with-abi=ilp32d --enable-multilib --with-languages=c,c++
+# Pre-initialize submodules so that Docker caches them
+RUN git submodule update --init --recursive --jobs $(nproc) -- \
+      binutils \
+      gcc \
+      gdb \
+      glibc \
+      newlib
+
+RUN ./configure --prefix=/opt/riscv --with-arch=rv32gc --with-abi=ilp32 --with-languages=c,c++
 RUN make -j$(nproc)
-RUN make install
+# Uncomment to build gcc for Linux userspace
+# RUN make linux -j$(nproc)
 RUN find /opt/riscv -type f -executable -exec strip --strip-all '{}' 2>/dev/null \;
