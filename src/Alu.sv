@@ -1,43 +1,39 @@
-module Alu (
-    input Types::int32_t in_a,
-    input Types::int32_t in_b,
-    input Types::alu_mode_t mode,
-    output Types::int32_t out
-);
+module Alu
   import Types::*;
+(
+    input int32_t in_a,
+    input int32_t in_b,
+    input alu_mode_t mode,
 
+    output int32_t out
+);
   bit [4:0] displacement;
   assign displacement = in_b[4:0];
 
   always_comb begin
     unique case (mode.operation)
       ALU_NULL: out = 0;
-      ALU_ADD: out = in_a + in_b;
-      ALU_SUB: out = in_a - in_b;
+      ALU_ADD:  out = in_a + in_b;
+      ALU_SUB:  out = in_a - in_b;
       ALU_SHIFT_LEFT: begin
-        if(mode.signedness == UNSIGNED)
-          out = in_a << displacement;
+        if (mode.signedness == UNSIGNED) out = in_a << displacement;
         else begin
-          out = 0; // Latch prevention
+          out = 0;  // Latch prevention
           $fatal("ALU_SHIFT_LEFT arithmetic (signed) is not supported");
         end
       end
       ALU_SHIFT_RIGHT: begin
-        if (mode.signedness == UNSIGNED)
-          out = unsigned'(in_a) >> displacement;
-        else
-          out = signed'(in_a) >>> displacement;
+        if (mode.signedness == UNSIGNED) out = unsigned'(in_a) >> displacement;
+        else out = signed'(in_a) >>> displacement;
       end
       ALU_SET_LESS_THAN: begin
-        if (mode.signedness == SIGNED)
-          out = signed'(in_a) < signed'(in_b) ? 1 : 0;
-        else
-          out = unsigned'(in_a) < unsigned'(in_b) ? 1 : 0;
+        if (mode.signedness == SIGNED) out = signed'(in_a) < signed'(in_b) ? 1 : 0;
+        else out = unsigned'(in_a) < unsigned'(in_b) ? 1 : 0;
       end
-      ALU_XOR: out = in_a ^ in_b;
-      ALU_AND: out = in_a & in_b;
-      ALU_OR: out = in_a | in_b;
-      ALU_EQ: out = (in_a == in_b) ? 1 : 0;
+      ALU_XOR:  out = in_a ^ in_b;
+      ALU_AND:  out = in_a & in_b;
+      ALU_OR:   out = in_a | in_b;
+      ALU_EQ:   out = (in_a == in_b) ? 1 : 0;
 
       default: out = 0;
     endcase

@@ -1,18 +1,18 @@
 `default_nettype none
 
 
-module Cpu (
+module Cpu
+  import Types::*;
+(
     input logic clk,
     input logic rst,
 
     AvalonMmRw.Host   data_manager,
     AvalonMmRead.Host instruction_manager,
 
-    output Types::uint32_t debug_current_pc,
-    output Types::uint32_t debug_instruction
+    output uint32_t debug_current_pc,
+    output uint32_t debug_instruction
 );
-  import Types::*;
-
   /* Registers */
   uint32_t ir;
 
@@ -113,7 +113,7 @@ module Cpu (
 
   always_comb begin : PC_STEP_MUX
     var bit take_branch;
-	  take_branch = !(alu_out == 0) ^ invert_logic_result;
+    take_branch = !(alu_out == 0) ^ invert_logic_result;
     if (take_branch && branch) begin
       pc_step = instruction_immediate;
     end else begin

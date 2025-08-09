@@ -1,16 +1,17 @@
-module Decoder (
-    input Types::uint32_t ir,
+module Decoder
+  import Types::*;
+(
+    input uint32_t ir,
+  
     output int len,
     output bit [6:0] opcode,
     output bit [4:0] rd,
     output bit [4:0] rs1,
     output bit [4:0] rs2,
-    output Types::uint32_t imm,
+    output uint32_t imm,
     output bit [2:0] f3,
     output bit [6:0] f7
 );
-  import Types::*;
-
   typedef enum {
     NULL,
     FORMAT_R,

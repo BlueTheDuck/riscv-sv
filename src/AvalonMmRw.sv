@@ -1,10 +1,12 @@
 interface AvalonMmRw;
-  Types::tri32_t address;
+  import Types::*;
+
+  tri32_t address;
   logic [3:0] byteenable;
   logic read;
-  Types::tri32_t agent_to_host;
+  tri32_t agent_to_host;
   logic write;
-  Types::tri32_t host_to_agent;
+  tri32_t host_to_agent;
 
   // Wait-State Signals
   logic waitrequest;
