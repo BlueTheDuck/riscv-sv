@@ -1,8 +1,8 @@
 `default_nettype none
 
-import Types::word;
-
-module MemoryUnit (
+module MemoryUnit
+  import Types::*;
+(
     input bit clk,
     input bit rst,
 
@@ -12,6 +12,7 @@ module MemoryUnit (
     input bit [1:0] len,
     input bit zero_extend,
     input word to_bus,
+
     output word from_bus,
     output bit read_valid,
     output bit write_done,
@@ -22,7 +23,7 @@ module MemoryUnit (
   assign port.read = read;
   assign port.write = write;
   assign port.address = address;
-  
+
   // read_valid ⟷ read ⟹ !wait ∧ readdatavalid
   //             - !read ∨ (!wait ∧ readdatavalid)
   assign read_valid = !read || (!port.waitrequest && port.readdatavalid);
@@ -31,7 +32,7 @@ module MemoryUnit (
   //             - !write ∨ !wait
   //             - !(write ∧ wait)
   assign write_done = !(write && port.waitrequest);
-  
+
   assign from_bus = mask_bytes(port.agent_to_host, len, zero_extend);
   assign port.host_to_agent = mask_bytes(to_bus, len, zero_extend);
 

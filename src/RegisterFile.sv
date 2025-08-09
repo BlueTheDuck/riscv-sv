@@ -1,20 +1,20 @@
-module RegisterFile (
+module RegisterFile
+  import Types::*;
+(
     input bit clk,
     input logic [4:0] rd_index,
     input logic [4:0] rs1_index,
     input logic [4:0] rs2_index,
 
-    input  Types::uint32_t rd_in,
-    output Types::uint32_t rs1_out,
-    output Types::uint32_t rs2_out,
+    input uint32_t rd_in,
+
+    output uint32_t rs1_out,
+    output uint32_t rs2_out,
 
     input bit rd_w
 );
-  import Types::*;
-
   word regs[31:1];
 
-  // TODO: maybe use net type that drives zero?
   assign rs1_out = rs1_index != 0 ? regs[rs1_index] : 0;
   assign rs2_out = rs2_index != 0 ? regs[rs2_index] : 0;
 

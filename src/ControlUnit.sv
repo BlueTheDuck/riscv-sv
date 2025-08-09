@@ -1,4 +1,6 @@
-module ControlUnit (
+module ControlUnit
+  import Types::*;
+(
     input bit clk,
     input bit rst,
     input bit [6:0] opcode,
@@ -7,8 +9,8 @@ module ControlUnit (
 
     input bit stall,
 
-    output Types::data_path_map_t data_path,
-    output Types::alu_mode_t alu_mode,
+    output data_path_map_t data_path,
+    output alu_mode_t alu_mode,
     output bit invert_logic_result,
     output bit dbus_we,
     output bit is_branch,
@@ -18,8 +20,6 @@ module ControlUnit (
     output bit en_pc_counter,
     output bit write_back_stage
 );
-  import Types::*;
-
   localparam data_path_map_t null_cu = '{
       alu_in_a: ALU_IN_A_REG,
       alu_in_b: ALU_IN_B_REG,
@@ -144,9 +144,9 @@ module ControlUnit (
   end
 
   // Special cases
-  assign dbus_we = opcode == OP_STORE;
-  assign is_branch  = opcode == OP_BRANCH;
-  assign comp_op = f3;
+  assign dbus_we   = opcode == OP_STORE;
+  assign is_branch = opcode == OP_BRANCH;
+  assign comp_op   = f3;
 
   always_comb begin : ALU_OP_DECODER
 
@@ -178,10 +178,7 @@ module ControlUnit (
       if (comp_op.mode == 1'b0) begin
         alu_mode.operation = ALU_EQ;
       end else begin
-        alu_mode = '{
-            operation: ALU_SET_LESS_THAN,
-            signedness: comp_op.signedness
-        };
+        alu_mode = '{operation: ALU_SET_LESS_THAN, signedness: comp_op.signedness};
       end
       invert_logic_result = comp_op.negate;
     end else $fatal;
