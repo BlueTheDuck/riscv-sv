@@ -176,8 +176,7 @@ module CpuTb ();
     #1;
     assert (cpu.next_pc == 'hC)
     else $error("expected next_pc == 0xC, got 0x%08h", cpu.next_pc);
-    @(posedge clk);
-    @(posedge clk);
+    repeat (4) @(posedge clk);
     #1;
     assert (cpu.current_pc == 'hC)
     else $error("expected current_pc == 0xC, got 0x%08h", cpu.current_pc);
@@ -188,8 +187,8 @@ module CpuTb ();
     #1;
     assert (cpu.next_pc == 'h18)
     else $error("expected next_pc == 0x18, got 0x%08h", cpu.next_pc);
-    @(posedge clk);
-    @(posedge clk);
+    repeat (4) @(posedge clk);
+
     #1;
     assert (cpu.current_pc == 'h18 && cpu.regs.regs[1] == 'hC + 4)
     else begin

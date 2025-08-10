@@ -34,6 +34,7 @@ module Cpu
   /// Delay execution
   bit stall;
   bit mu_read_valid, mu_write_done;
+  bit imu_ready;
 
   /* Data path */
   int32_t alu_in_a, alu_in_b, alu_out;
@@ -43,6 +44,16 @@ module Cpu
   int32_t  instruction_len;
   int32_t  pc_step;
   uint32_t data_from_bus;
+
+  InstructionManagerUnit imu (
+      .clk(clk),
+      .rst(rst),
+      .instruction_manager(instruction_manager),
+      .pc(next_pc),
+      .fetch_next_instruction(fetch_next_instruction),
+      .ready(imu_ready),
+      .ir(ir)
+  );
 
   Decoder decoder (
       .ir(ir),
@@ -148,26 +159,19 @@ module Cpu
 
   always_ff @(posedge clk, negedge rst) begin
     if (rst == 0) begin
-      ir <= 0;
       current_pc <= 0;
-    end else if (load_next_instruction && instruction_manager.readdatavalid) begin
-      ir <= instruction_manager.agent_to_host;
+    end else if (load_next_instruction && imu_ready) begin
       current_pc <= next_pc;
       $display("IR <= %08x FROM %08x", instruction_manager.agent_to_host,
                instruction_manager.address);
     end else begin
-      ir <= ir;
       current_pc <= current_pc;
     end
   end
 
-  assign instruction_manager.byteenable = 4'b1111;
-  assign instruction_manager.read = fetch_next_instruction;
-  assign instruction_manager.address = next_pc;
 
   assign data_stall = !(mu_read_valid && mu_write_done);
-  assign instruction_stall = (instruction_manager.read && !instruction_manager.readdatavalid)
-                          || (instruction_manager.read && instruction_manager.waitrequest);
+  assign instruction_stall = imu_ready == 0;
   assign stall = data_stall || instruction_stall;
 
   assign enable_rd_store = data_path.dest_reg_from != DEST_REG_FROM_NONE;
@@ -190,6 +194,7 @@ module Cpu
   task automatic execute_opcode(word opcode);
     $display("[%4t] execute_opcode(%08x)", $time, opcode);
     ir <= opcode;
+    imu.simulate_ready(opcode);
     cu.set_execute();
   endtask
 endmodule

@@ -41,3 +41,9 @@ cputb:
 	verilator --Mdir obj_dir/tb_cpu $(VERILATOR_ARGS) $(SIM_MAIN) --top CpuTb $(MODULES) tb/CpuTb.sv
 	./obj_dir/tb_cpu/VCpuTb
 .PHONY: cputb
+instruction_manager_tb:
+	mkdir -p obj_dir/instruction_manager_tb
+	verilator --Mdir obj_dir/instruction_manager_tb $(VERILATOR_ARGS) --top InstructionManagerTb $(MODULES) tb/InstructionManagerTb.sv
+	./obj_dir/instruction_manager_tb/VInstructionManagerTb
+.PHONY: instruction_manager_tb
+
