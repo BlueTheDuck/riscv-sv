@@ -3,6 +3,9 @@
 module Computer ();
   import Types::*;
 
+  localparam TIMEOUT = 1s;
+  localparam DELAY_ONE_PERCENT = TIMEOUT / 100;
+
   bit clk, rst;
   word debug_current_pc, debug_instruction;
 
@@ -73,7 +76,7 @@ module Computer ();
 
   task automatic timeout();
     for (int i = 0; i < 100; i++) begin
-      #1000;
+      #DELAY_ONE_PERCENT;
       $display("Warning %d/100: %0t ticks elapsed", i + 1, $time);
     end
     $display("Simulation timeout at %t, finishing...", $time);
