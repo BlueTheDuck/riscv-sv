@@ -22,7 +22,7 @@ module Cpu
   bit increment_pc;
   data_path_map_t data_path;
   bit invert_logic_result;
-  bit branch, dbus_we;
+  bit branch, dbus_we, dbus_re;
   alu_mode_t alu_mode;
   bit [6:0] opcode;
   bit [4:0] rd_index, rs1_index, rs2_index;
@@ -33,7 +33,7 @@ module Cpu
   bit data_stall, instruction_stall;
   /// Delay execution
   bit stall;
-  bit mu_read_valid, mu_write_done;
+  bit mu_ready;
   bit imu_ready;
 
   /* Data path */
@@ -77,6 +77,7 @@ module Cpu
       .alu_mode(alu_mode),
       .invert_logic_result(invert_logic_result),
       .dbus_we(dbus_we),
+      .dbus_re(dbus_re),
       .is_branch(branch),
 
       .load_ir(load_next_instruction),
@@ -145,15 +146,14 @@ module Cpu
   MemoryUnit mu (
       .clk(clk),
       .rst(rst),
-      .read(data_path.dest_reg_from == DEST_REG_FROM_MEM),
+      .read(dbus_re),
       .write(dbus_we),
       .address(alu_out),
-      .len(instruction_f3[1:0]),
+      .size(int_size_t'(instruction_f3[1:0])),
       .zero_extend((instruction_f3 & 3'b100) != 0),
       .to_bus(rs2_out),
       .from_bus(data_from_bus),
-      .read_valid(mu_read_valid),
-      .write_done(mu_write_done),
+      .ready(mu_ready),
       .port(data_manager)
   );
 
@@ -170,7 +170,7 @@ module Cpu
   end
 
 
-  assign data_stall = !(mu_read_valid && mu_write_done);
+  assign data_stall = !(mu_ready);
   assign instruction_stall = imu_ready == 0;
   assign stall = data_stall || instruction_stall;
 

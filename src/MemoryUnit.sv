@@ -6,53 +6,79 @@ module MemoryUnit
     input bit clk,
     input bit rst,
 
-    input bit read,
-    input bit write,
     input word address,
-    input bit [1:0] len,
+    input int_size_t size,
     input bit zero_extend,
+
+    input  bit  read,
+    output word from_bus,
+
+    input bit  write,
     input word to_bus,
 
-    output word from_bus,
-    output bit read_valid,
-    output bit write_done,
+    output bit ready,
 
     AvalonMmRw.Host port
 );
+  enum int {
+    IDLE,
+    PUT_REQUEST_ON_BUS,
+    WAITING_FOR_RESPONSE
+  } state;
 
-  assign port.read = read;
-  assign port.write = write;
-  assign port.address = address;
+  assign port.read = state == PUT_REQUEST_ON_BUS;
+  always_comb begin
+    if (state == PUT_REQUEST_ON_BUS)
+      priority case (size)
+        INT_SIZE_BYTE: port.byteenable = 4'b0001;
+        INT_SIZE_HALF: port.byteenable = 4'b0011;
+        INT_SIZE_WORD: port.byteenable = 4'b1111;
+        default: port.byteenable = 0;
+      endcase
+    else port.byteenable = 0;
+  end
+  assign ready = state == IDLE;
 
-  // read_valid ⟷ read ⟹ !wait ∧ readdatavalid
-  //             - !read ∨ (!wait ∧ readdatavalid)
-  assign read_valid = !read || (!port.waitrequest && port.readdatavalid);
+  always_ff @(posedge clk or negedge rst) begin
+    if (!rst) begin
+      state <= IDLE;
+    end else begin
+      unique case (state)
+        IDLE:
+        if (read) begin
+          port.address <= address;
+          state <= PUT_REQUEST_ON_BUS;
+        end
 
-  // write_done ⟷ write ⟹ !wait
-  //             - !write ∨ !wait
-  //             - !(write ∧ wait)
-  assign write_done = !(write && port.waitrequest);
+        PUT_REQUEST_ON_BUS:
+        if (port.readdatavalid) begin
+          from_bus <= truncate_word(port.agent_to_host, size, ~zero_extend);
+          state <= IDLE;
+        end else if (port.waitrequest) begin
+          state <= PUT_REQUEST_ON_BUS;
+        end else begin
+          state <= WAITING_FOR_RESPONSE;
+        end
 
-  assign from_bus = mask_bytes(port.agent_to_host, len, zero_extend);
-  assign port.host_to_agent = mask_bytes(to_bus, len, zero_extend);
+        WAITING_FOR_RESPONSE:
+        if (port.readdatavalid) begin
+          from_bus <= truncate_word(port.agent_to_host, size, ~zero_extend);
+          state <= IDLE;
+        end
+      endcase
+    end
+  end
 
-  always_comb
-    case (len)
-      0: port.byteenable = 4'b0001;
-      1: port.byteenable = 4'b0011;
-      2: port.byteenable = 4'b1111;
-      default: port.byteenable = 0;
-    endcase
-
-  function word mask_bytes(input word data, input bit [1:0] len, input bit zero_extend);
-    casez ({
-      zero_extend, len
+  function word truncate_word(input uint32_t data, input int_size_t size, input bit sign_extend);
+    case ({
+      sign_extend, size
     })
-      3'b000:  return 32'(signed'(data[7:0]));
-      3'b001:  return 32'(signed'(data[15:0]));
-      3'b010:  return data;
-      3'b100:  return {24'b0, data[7:0]};
-      3'b101:  return {16'b0, data[15:0]};
+      {1'b1, INT_SIZE_BYTE} : return signed'(data[7:0]);
+      {1'b1, INT_SIZE_HALF} : return signed'(data[15:0]);
+      {1'b1, INT_SIZE_WORD} : return data;
+      {1'b0, INT_SIZE_BYTE} : return unsigned'(data[7:0]);
+      {1'b0, INT_SIZE_HALF} : return unsigned'(data[15:0]);
+      {1'b0, INT_SIZE_WORD} : return data;
       default: return 0;
     endcase
   endfunction

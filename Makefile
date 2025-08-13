@@ -46,4 +46,9 @@ instruction_manager_tb:
 	verilator --Mdir obj_dir/instruction_manager_tb $(VERILATOR_ARGS) --top InstructionManagerTb $(MODULES) tb/InstructionManagerTb.sv
 	./obj_dir/instruction_manager_tb/VInstructionManagerTb
 .PHONY: instruction_manager_tb
+data_manager_tb:
+	mkdir -p obj_dir/data_manager_tb
+	verilator --Mdir obj_dir/data_manager_tb $(VERILATOR_ARGS) --top DataManagerTb $(MODULES) tb/DataManagerTb.sv
+	./obj_dir/data_manager_tb/VDataManagerTb
+.PHONY: data_manager_tb
 

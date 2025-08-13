@@ -13,6 +13,7 @@ module ControlUnit
     output alu_mode_t alu_mode,
     output bit invert_logic_result,
     output bit dbus_we,
+    output bit dbus_re,
     output bit is_branch,
 
     output bit fetch_next_instruction,
@@ -145,6 +146,7 @@ module ControlUnit
 
   // Special cases
   assign dbus_we   = opcode == OP_STORE;
+  assign dbus_re   = data_path.dest_reg_from == DEST_REG_FROM_MEM && state == CU_STATE_EXEC;
   assign is_branch = opcode == OP_BRANCH;
   assign comp_op   = f3;
 

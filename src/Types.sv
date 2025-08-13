@@ -4,6 +4,12 @@ package Types;
   typedef bit unsigned [31:0] uint32_t;
   typedef bit signed [31:0] int32_t;
 
+  typedef enum bit [1:0] {
+    INT_SIZE_BYTE = 2'd0,
+    INT_SIZE_HALF = 2'd1,
+    INT_SIZE_WORD = 2'd2
+  } int_size_t;
+
   typedef enum bit {
     UNSIGNED,
     SIGNED
