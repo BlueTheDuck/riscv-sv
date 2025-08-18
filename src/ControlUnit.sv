@@ -19,7 +19,9 @@ module ControlUnit
     output bit fetch_next_instruction,
     output bit load_ir,
     output bit en_pc_counter,
-    output bit write_back_stage
+    output bit write_back_stage,
+
+    input  bit debug_wait
 );
   localparam data_path_map_t null_cu = '{
       alu_in_a: ALU_IN_A_REG,
@@ -114,8 +116,8 @@ module ControlUnit
           CU_STATE_ADDR_OUT: state <= CU_STATE_LOAD_IR;
           CU_STATE_LOAD_IR: state <= CU_STATE_EXEC;
           CU_STATE_EXEC: state <= CU_STATE_WRITEBACK;
-          CU_STATE_WRITEBACK: state <= CU_STATE_ADDR_OUT;
-          default: state <= CU_STATE_ADDR_OUT;
+          CU_STATE_WRITEBACK: state <= debug_wait ? CU_STATE_NULL : CU_STATE_ADDR_OUT;
+          default: state <= debug_wait ? state : CU_STATE_ADDR_OUT;
         endcase
       end
     end

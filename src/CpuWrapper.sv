@@ -19,7 +19,8 @@ module CpuWrapper import Types::*; (
     input  bit         avalon_instruction_manager_readdatavalid,
 
     output uint32_t debug_current_pc,
-    output uint32_t debug_instruction
+    output uint32_t debug_instruction,
+    input  bit      debug_wait
 );
   AvalonMmRw data_manager ();
   AvalonMmRead instruction_manager ();

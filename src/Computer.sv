@@ -7,7 +7,7 @@ module Computer ();
   localparam DELAY_ONE_PERCENT = TIMEOUT / 100;
 
   bit clk, rst;
-  word debug_current_pc, debug_instruction;
+  word debug_current_pc, debug_instruction, debug_wait;
 
   AvalonMmRead ibus ();
   AvalonMmRw dbus ();

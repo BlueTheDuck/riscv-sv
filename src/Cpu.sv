@@ -11,7 +11,8 @@ module Cpu
     AvalonMmRead.Host instruction_manager,
 
     output uint32_t debug_current_pc,
-    output uint32_t debug_instruction
+    output uint32_t debug_instruction,
+    input  bit      debug_wait
 );
   /* Registers */
   uint32_t ir;
@@ -83,7 +84,9 @@ module Cpu
       .load_ir(load_next_instruction),
       .fetch_next_instruction(fetch_next_instruction),
       .en_pc_counter(increment_pc),
-      .write_back_stage(write_back_stage)
+      .write_back_stage(write_back_stage),
+
+      .debug_wait(debug_wait)
   );
   RegisterFile regs (
       .clk(clk),
