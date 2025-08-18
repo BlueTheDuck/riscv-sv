@@ -17,7 +17,7 @@ output_file = None
 if args.input_file.endswith(".bin"):
   output_file = args.input_file[:-4] + ".hex"
 else:
-  output_file = args.input_file + ".bin"
+  output_file = args.input_file + ".hex"
 
 word_size = args.word_size >> 3
 

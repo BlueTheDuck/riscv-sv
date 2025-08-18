@@ -27,17 +27,17 @@ main.o: C_FLAGS += -O1
 %.o: %.c
 	$(CC) $(C_FLAGS) -c -o $@ $<
 
-main: $(OBJS)
+main.elf: $(OBJS)
 	$(LD) $^ $(LD_FLAGS) -o $@
 
-hexdump: main
+hexdump: main.elf
 	$(OBJDUMP) -d $<
 	$(OBJDUMP) -t $<
 .PHONY: hexdump
 
-%.bin: %
+%.bin: %.elf
 	$(OBJCOPY) -Obinary $< $@
 
 clean:
-	-rm main *.o *.bin *.dmp *.dmp.txt
+	-rm main *.o *.bin *.dmp *.dmp.txt *.elf
 .PHONY: clean

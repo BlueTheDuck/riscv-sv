@@ -24,6 +24,9 @@ run: build $(INIT_FILE)
 $(INIT_FILE):
 	$(MAKE) -C sw $(notdir $@)
 
+sw/%.hex: sw/%.bin
+	./tools/bin2intelhex.py $< 8
+
 clean:
 	-make -C sw clean
 	-rm obj_dir/*.o obj_dir/V$(TOP) obj_dir/sim_computer
