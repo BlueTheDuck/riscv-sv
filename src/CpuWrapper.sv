@@ -20,7 +20,8 @@ module CpuWrapper import Types::*; (
 
     output uint32_t debug_current_pc,
     output uint32_t debug_instruction,
-    input  bit      debug_wait
+    input  bit      debug_wait,
+    output bit[1023:0] debug_registers_fanout
 );
   AvalonMmRw data_manager ();
   AvalonMmRead instruction_manager ();
@@ -40,6 +41,15 @@ module CpuWrapper import Types::*; (
   assign avalon_instruction_manager_read       = instruction_manager.read;
   assign instruction_manager.agent_to_host     = avalon_instruction_manager_agent_to_host;
   assign instruction_manager.readdatavalid     = avalon_instruction_manager_readdatavalid;
+
+  uint32_t debug_registers[32];
+
+  generate
+    genvar i;
+    for (i = 0; i < 32; i++) begin : GENERATE_DEBUG_REGISTERS_ASSIGNMENTS
+      assign debug_registers_fanout[i*32 +: 32] = debug_registers[i];
+    end
+  endgenerate
 
 
   Cpu cpu (

@@ -12,7 +12,8 @@ module Cpu
 
     output uint32_t debug_current_pc,
     output uint32_t debug_instruction,
-    input  bit      debug_wait
+    input  bit      debug_wait,
+    output uint32_t debug_registers[32]
 );
   /* Registers */
   uint32_t ir;
@@ -96,7 +97,9 @@ module Cpu
       .rd_in(rd_in),
       .rs1_out(rs1_out),
       .rs2_out(rs2_out),
-      .rd_w(enable_rd_store && write_back_stage)
+      .rd_w(enable_rd_store && write_back_stage),
+
+      .debug_registers(debug_registers)
   );
   always_comb begin : ALU_INPUT_A_MUX
     unique case (data_path.alu_in_a)
@@ -178,6 +181,9 @@ module Cpu
   assign stall = data_stall || instruction_stall;
 
   assign enable_rd_store = data_path.dest_reg_from != DEST_REG_FROM_NONE;
+
+  assign debug_current_pc = current_pc;
+  assign debug_instruction = ir;
 
   function word swap_endianness(input word idata);
     return {idata[7:0], idata[15:8], idata[23:16], idata[31:24]};

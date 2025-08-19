@@ -11,16 +11,22 @@ module RegisterFile
     output uint32_t rs1_out,
     output uint32_t rs2_out,
 
-    input bit rd_w
-);
-  word regs[31:1];
+    input bit rd_w,
 
-  assign rs1_out = rs1_index != 0 ? regs[rs1_index] : 0;
-  assign rs2_out = rs2_index != 0 ? regs[rs2_index] : 0;
+    output uint32_t debug_registers[32]
+);
+  uint32_t regs[32];
+
+  assign rs1_out = regs[rs1_index];
+  assign rs2_out = regs[rs2_index];
+
+  assign debug_registers = regs;
 
   always_ff @(negedge clk) begin
-    if (rd_w && rd_index != 0) begin
-      regs[rd_index] <= rd_in;
+    if (rd_w) begin
+      regs[rd_index] <= rd_index == 0 ? 0 : rd_in;
+    end else begin
+      regs[rd_index] <= regs[rd_index];
     end
   end
 
@@ -74,7 +80,7 @@ module RegisterFile
   // verilator lint_on UNUSEDSIGNAL
 `endif
 
-  task automatic set_registers(word values[31:1]);
+  task automatic set_registers(word values[32]);
     regs = values;
   endtask
 endmodule
