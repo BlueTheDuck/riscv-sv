@@ -56,7 +56,7 @@ uint32_t fibos[32] = {0};
 char encoded[256] = {0};
 char decoded[256] = {0};
 
-uint32_t main() {
+uint32_t main(uint32_t, char**) {
   fibonacci(fibos);
   rot13(str, encoded);
   rot13(encoded, decoded);

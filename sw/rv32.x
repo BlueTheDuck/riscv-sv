@@ -10,16 +10,16 @@ SECTIONS {
      *(.text .text.*)
   } >ROM
 
+  .rodata : {
+      . = ALIGN(4);
+      *(.rdata)
+      *(.rodata .rodata.*)
+  } >ROM
+
   .data : { 
     . = ALIGN(4);
-    _bdata_start = .;
-    *(.rodata .rodata.*)
     *(.data .data.*)
-    . = ALIGN(4);
-    *(.got .got.*)
-    _bdata_end = .;
-    . = ALIGN(8);
-    __global_pointer$ = .;
+    PROVIDE (__global_pointer$ = . + 0x800);
   } >ROM
 
   .bss (NOLOAD) : {
