@@ -21,7 +21,7 @@ module Cpu
   /* Control signals */
   bit load_next_instruction;
   bit fetch_next_instruction;
-  bit increment_pc;
+  bit increment_pc, load_pc;
   data_path_map_t data_path;
   bit invert_logic_result;
   bit branch, dbus_we, dbus_re;
@@ -30,7 +30,7 @@ module Cpu
   bit [4:0] rd_index, rs1_index, rs2_index;
   bit [2:0] instruction_f3;
   bit [6:0] instruction_f7;
-  bit enable_rd_store, write_back_stage;
+  bit rd_w, write_back_stage;
   /// Which bus are we waiting a response on?
   bit data_stall, instruction_stall;
   /// Delay execution
@@ -81,10 +81,12 @@ module Cpu
       .dbus_we(dbus_we),
       .dbus_re(dbus_re),
       .is_branch(branch),
+      .rd_w(rd_w),
 
       .load_ir(load_next_instruction),
       .fetch_next_instruction(fetch_next_instruction),
-      .en_pc_counter(increment_pc),
+      .increment_pc(increment_pc),
+      .load_pc(load_pc),
       .write_back_stage(write_back_stage),
 
       .debug_wait(debug_wait)
@@ -97,7 +99,7 @@ module Cpu
       .rd_in(rd_in),
       .rs1_out(rs1_out),
       .rs2_out(rs2_out),
-      .rd_w(enable_rd_store && write_back_stage),
+      .rd_w(rd_w),
 
       .debug_registers(debug_registers)
   );
@@ -142,8 +144,8 @@ module Cpu
   Counter pc (
       .clk(clk),
       .rst(rst),
-      .increment(increment_pc && !stall),
-      .load(data_path.pc_src == PC_SRC_ALU && write_back_stage),
+      .increment(increment_pc),
+      .load(load_pc),
       .step(pc_step),
       .in(alu_out),
       .out(next_pc)
@@ -179,8 +181,6 @@ module Cpu
   assign data_stall = !(mu_ready);
   assign instruction_stall = imu_ready == 0;
   assign stall = data_stall || instruction_stall;
-
-  assign enable_rd_store = data_path.dest_reg_from != DEST_REG_FROM_NONE;
 
   assign debug_current_pc = current_pc;
   assign debug_instruction = ir;

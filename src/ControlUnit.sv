@@ -16,9 +16,12 @@ module ControlUnit
     output bit dbus_re,
     output bit is_branch,
 
+    output bit rd_w,
+
     output bit fetch_next_instruction,
     output bit load_ir,
-    output bit en_pc_counter,
+    output bit increment_pc,
+    output bit load_pc,
     output bit write_back_stage,
 
     input  bit debug_wait
@@ -124,7 +127,7 @@ module ControlUnit
   end
   assign fetch_next_instruction = state == CU_STATE_ADDR_OUT;
   assign load_ir = state == CU_STATE_LOAD_IR;
-  assign en_pc_counter = state == CU_STATE_EXEC;
+  assign increment_pc = state == CU_STATE_WRITEBACK && !stall;
   assign write_back_stage = state == CU_STATE_WRITEBACK;
 
   always_comb begin
@@ -151,6 +154,8 @@ module ControlUnit
   assign dbus_re   = data_path.dest_reg_from == DEST_REG_FROM_MEM && state == CU_STATE_EXEC;
   assign is_branch = opcode == OP_BRANCH;
   assign comp_op   = f3;
+  assign rd_w      = data_path.dest_reg_from != DEST_REG_FROM_NONE && state == CU_STATE_WRITEBACK;
+  assign load_pc   = data_path.pc_src == PC_SRC_ALU && write_back_stage && !stall;
 
   always_comb begin : ALU_OP_DECODER
 
