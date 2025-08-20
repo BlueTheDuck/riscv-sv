@@ -30,7 +30,7 @@ module Cpu
   bit [4:0] rd_index, rs1_index, rs2_index;
   bit [2:0] instruction_f3;
   bit [6:0] instruction_f7;
-  bit rd_w, write_back_stage;
+  bit rd_we;
   /// Which bus are we waiting a response on?
   bit data_stall, instruction_stall;
   /// Delay execution
@@ -71,23 +71,24 @@ module Cpu
   ControlUnit cu (
       .clk(clk),
       .rst(rst),
-      .stall(stall),
       .opcode(opcode),
       .f3(instruction_f3),
       .f7(instruction_f7),
+
+      .stall(stall),
+
       .data_path(data_path),
       .alu_mode(alu_mode),
       .invert_logic_result(invert_logic_result),
-      .dbus_we(dbus_we),
-      .dbus_re(dbus_re),
-      .is_branch(branch),
-      .rd_w(rd_w),
 
-      .load_ir(load_next_instruction),
       .fetch_next_instruction(fetch_next_instruction),
+      .load_ir(load_next_instruction),
       .increment_pc(increment_pc),
       .load_pc(load_pc),
-      .write_back_stage(write_back_stage),
+      .dbus_we(dbus_we),
+      .dbus_re(dbus_re),
+      .load_rd(rd_we),
+      .branching(branch),
 
       .debug_wait(debug_wait)
   );
@@ -99,7 +100,7 @@ module Cpu
       .rd_in(rd_in),
       .rs1_out(rs1_out),
       .rs2_out(rs2_out),
-      .rd_w(rd_w),
+      .rd_we(rd_we),
 
       .debug_registers(debug_registers)
   );

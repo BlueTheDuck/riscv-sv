@@ -12,17 +12,15 @@ module ControlUnit
     output data_path_map_t data_path,
     output alu_mode_t alu_mode,
     output bit invert_logic_result,
-    output bit dbus_we,
-    output bit dbus_re,
-    output bit is_branch,
-
-    output bit rd_w,
-
+  
     output bit fetch_next_instruction,
     output bit load_ir,
     output bit increment_pc,
     output bit load_pc,
-    output bit write_back_stage,
+    output bit dbus_we,
+    output bit dbus_re,
+    output bit load_rd,
+    output bit branching,
 
     input  bit debug_wait
 );
@@ -125,10 +123,17 @@ module ControlUnit
       end
     end
   end
+
   assign fetch_next_instruction = state == CU_STATE_ADDR_OUT;
-  assign load_ir = state == CU_STATE_LOAD_IR;
-  assign increment_pc = state == CU_STATE_WRITEBACK && !stall;
-  assign write_back_stage = state == CU_STATE_WRITEBACK;
+  assign load_ir                = state == CU_STATE_LOAD_IR;
+  assign increment_pc           = state == CU_STATE_WRITEBACK && !stall;
+  assign load_pc                = data_path.pc_src == PC_SRC_ALU && state == CU_STATE_WRITEBACK && !stall;
+  assign dbus_we                = opcode == OP_STORE;
+  assign dbus_re                = data_path.dest_reg_from == DEST_REG_FROM_MEM && state == CU_STATE_EXEC;
+  assign load_rd                = data_path.dest_reg_from != DEST_REG_FROM_NONE && state == CU_STATE_WRITEBACK;
+  assign branching              = opcode == OP_BRANCH;
+  assign comp_op                = f3;
+
 
   always_comb begin
     case (opcode)
@@ -148,14 +153,6 @@ module ControlUnit
       $fatal;
     end
   end
-
-  // Special cases
-  assign dbus_we   = opcode == OP_STORE;
-  assign dbus_re   = data_path.dest_reg_from == DEST_REG_FROM_MEM && state == CU_STATE_EXEC;
-  assign is_branch = opcode == OP_BRANCH;
-  assign comp_op   = f3;
-  assign rd_w      = data_path.dest_reg_from != DEST_REG_FROM_NONE && state == CU_STATE_WRITEBACK;
-  assign load_pc   = data_path.pc_src == PC_SRC_ALU && write_back_stage && !stall;
 
   always_comb begin : ALU_OP_DECODER
 

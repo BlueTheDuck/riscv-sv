@@ -11,7 +11,7 @@ module RegisterFile
     output uint32_t rs1_out,
     output uint32_t rs2_out,
 
-    input bit rd_w,
+    input bit rd_we,
 
     output uint32_t debug_registers[32]
 );
@@ -23,7 +23,7 @@ module RegisterFile
   assign debug_registers = regs;
 
   always_ff @(negedge clk) begin
-    if (rd_w) begin
+    if (rd_we) begin
       regs[rd_index] <= rd_index == 0 ? 0 : rd_in;
     end else begin
       regs[rd_index] <= regs[rd_index];
