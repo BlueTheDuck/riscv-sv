@@ -21,75 +21,78 @@ module MemoryUnit
     AvalonMmRw.Host port
 );
   enum int {
-    IDLE,
-    PUT_REQUEST_ON_BUS,
-    PUT_WRITE_ON_BUS,
+    READY,
+    SEND_READ_REQUEST,
+    SEND_WRITE_REQUEST,
     WAITING_FOR_RESPONSE
   } state;
 
-  assign port.read  = state == PUT_REQUEST_ON_BUS;
-  assign port.write = state == PUT_WRITE_ON_BUS;
-  always_comb begin
-    priority case (size)
-      INT_SIZE_BYTE: port.byteenable = 4'b0001;
-      INT_SIZE_HALF: port.byteenable = 4'b0011;
-      INT_SIZE_WORD: port.byteenable = 4'b1111;
-      default: port.byteenable = 0;
-    endcase
-  end
-  assign ready = state == IDLE;
+  assign port.read  = state == SEND_READ_REQUEST;
+  assign port.write = state == SEND_WRITE_REQUEST;
+  assign ready      = state == READY;
 
   always_ff @(posedge clk or negedge rst) begin
     if (!rst) begin
-      state <= IDLE;
+      state <= READY;
     end else begin
       unique case (state)
-        IDLE:
+        READY:
         if (read) begin
           port.address <= address;
-          state <= PUT_REQUEST_ON_BUS;
+          port.byteenable <= size_to_bytemask(size);
+          state <= SEND_READ_REQUEST;
         end else if (write) begin
           port.address <= address;
           port.host_to_agent <= to_bus;
-          state <= PUT_WRITE_ON_BUS;
+          port.byteenable <= size_to_bytemask(size);
+          state <= SEND_WRITE_REQUEST;
         end
 
-        PUT_REQUEST_ON_BUS:
+        SEND_READ_REQUEST:
         if (port.readdatavalid) begin
           from_bus <= truncate_word(port.agent_to_host, size, ~zero_extend);
-          state <= IDLE;
+          state <= READY;
         end else if (port.waitrequest) begin
-          state <= PUT_REQUEST_ON_BUS;
+          state <= SEND_READ_REQUEST;
         end else begin
           state <= WAITING_FOR_RESPONSE;
         end
 
-        PUT_WRITE_ON_BUS:
+        SEND_WRITE_REQUEST:
         if (port.waitrequest) begin
-          state <= PUT_WRITE_ON_BUS;
+          state <= SEND_WRITE_REQUEST;
         end else begin
-          state <= IDLE;
+          state <= READY;
         end
 
         WAITING_FOR_RESPONSE:
         if (port.readdatavalid) begin
           from_bus <= truncate_word(port.agent_to_host, size, ~zero_extend);
-          state <= IDLE;
+          state <= READY;
         end
       endcase
     end
   end
 
-  function word truncate_word(input uint32_t data, input int_size_t size, input bit sign_extend);
+  function word truncate_word(input uint32_t data, input int_size_t size, input bit zero_extend);
     case ({
-      sign_extend, size
+      zero_extend, size
     })
-      {1'b1, INT_SIZE_BYTE} : return signed'(data[7:0]);
-      {1'b1, INT_SIZE_HALF} : return signed'(data[15:0]);
-      {1'b1, INT_SIZE_WORD} : return data;
-      {1'b0, INT_SIZE_BYTE} : return unsigned'(data[7:0]);
-      {1'b0, INT_SIZE_HALF} : return unsigned'(data[15:0]);
+      {1'b0, INT_SIZE_BYTE} : return signed'(data[7:0]);
+      {1'b0, INT_SIZE_HALF} : return signed'(data[15:0]);
       {1'b0, INT_SIZE_WORD} : return data;
+      {1'b1, INT_SIZE_BYTE} : return unsigned'(data[7:0]);
+      {1'b1, INT_SIZE_HALF} : return unsigned'(data[15:0]);
+      {1'b1, INT_SIZE_WORD} : return data;
+      default: return 0;
+    endcase
+  endfunction
+
+  function logic[3:0] size_to_bytemask(input int_size_t size);
+    case (size)
+      INT_SIZE_BYTE: return 4'b0001;
+      INT_SIZE_HALF: return 4'b0011;
+      INT_SIZE_WORD: return 4'b1111;
       default: return 0;
     endcase
   endfunction
