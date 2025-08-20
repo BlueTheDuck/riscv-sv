@@ -23,19 +23,19 @@ module MemoryUnit
   enum int {
     IDLE,
     PUT_REQUEST_ON_BUS,
+    PUT_WRITE_ON_BUS,
     WAITING_FOR_RESPONSE
   } state;
 
-  assign port.read = state == PUT_REQUEST_ON_BUS;
+  assign port.read  = state == PUT_REQUEST_ON_BUS;
+  assign port.write = state == PUT_WRITE_ON_BUS;
   always_comb begin
-    if (state == PUT_REQUEST_ON_BUS)
-      priority case (size)
-        INT_SIZE_BYTE: port.byteenable = 4'b0001;
-        INT_SIZE_HALF: port.byteenable = 4'b0011;
-        INT_SIZE_WORD: port.byteenable = 4'b1111;
-        default: port.byteenable = 0;
-      endcase
-    else port.byteenable = 0;
+    priority case (size)
+      INT_SIZE_BYTE: port.byteenable = 4'b0001;
+      INT_SIZE_HALF: port.byteenable = 4'b0011;
+      INT_SIZE_WORD: port.byteenable = 4'b1111;
+      default: port.byteenable = 0;
+    endcase
   end
   assign ready = state == IDLE;
 
@@ -48,6 +48,10 @@ module MemoryUnit
         if (read) begin
           port.address <= address;
           state <= PUT_REQUEST_ON_BUS;
+        end else if (write) begin
+          port.address <= address;
+          port.host_to_agent <= to_bus;
+          state <= PUT_WRITE_ON_BUS;
         end
 
         PUT_REQUEST_ON_BUS:
@@ -58,6 +62,13 @@ module MemoryUnit
           state <= PUT_REQUEST_ON_BUS;
         end else begin
           state <= WAITING_FOR_RESPONSE;
+        end
+
+        PUT_WRITE_ON_BUS:
+        if (port.waitrequest) begin
+          state <= PUT_WRITE_ON_BUS;
+        end else begin
+          state <= IDLE;
         end
 
         WAITING_FOR_RESPONSE:
