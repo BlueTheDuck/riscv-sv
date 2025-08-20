@@ -31,11 +31,7 @@ module Cpu
   bit [2:0] instruction_f3;
   bit [6:0] instruction_f7;
   bit rd_we;
-  /// Which bus are we waiting a response on?
-  bit data_stall, instruction_stall;
-  /// Delay execution
-  bit stall;
-  bit mu_ready;
+  bit dmu_ready;
   bit imu_ready;
 
   /* Data path */
@@ -75,7 +71,7 @@ module Cpu
       .f3(instruction_f3),
       .f7(instruction_f7),
 
-      .stall(stall),
+      .stall(!dmu_ready || !imu_ready),
 
       .data_path(data_path),
       .alu_mode(alu_mode),
@@ -152,7 +148,7 @@ module Cpu
       .out(next_pc)
   );
 
-  MemoryUnit mu (
+  DataManagerUnit dmu (
       .clk(clk),
       .rst(rst),
       .read(dbus_re),
@@ -162,7 +158,7 @@ module Cpu
       .zero_extend((instruction_f3 & 3'b100) != 0),
       .to_bus(rs2_out),
       .from_bus(data_from_bus),
-      .ready(mu_ready),
+      .ready(dmu_ready),
       .port(data_manager)
   );
 
@@ -177,11 +173,6 @@ module Cpu
       current_pc <= current_pc;
     end
   end
-
-
-  assign data_stall = !(mu_ready);
-  assign instruction_stall = imu_ready == 0;
-  assign stall = data_stall || instruction_stall;
 
   assign debug_current_pc = current_pc;
   assign debug_instruction = ir;

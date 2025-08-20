@@ -1,6 +1,6 @@
 `default_nettype none
 
-module MemoryUnit
+module DataManagerUnit
   import Types::*;
 (
     input bit clk,
