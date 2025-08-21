@@ -2,7 +2,7 @@ module Decoder
   import Types::*;
 (
     input uint32_t ir,
-  
+
     output int len,
     output bit [6:0] opcode,
     output bit [4:0] rd,

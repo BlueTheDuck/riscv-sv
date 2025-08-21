@@ -1,5 +1,3 @@
-import Types::word;
-
 module DualPortedMem #(
     parameter int SIZE = 1024
 ) (
@@ -61,6 +59,7 @@ module DualPortedMem #(
         $fwrite(fd, "%c", mem[i]);
       end
       $fclose(fd);
+      $display("Memory dumped to '%s'", filename);
     end else begin
       $fatal("'%s' could not be opened", filename);
     end

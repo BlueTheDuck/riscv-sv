@@ -41,10 +41,10 @@ module RegisterFile
 `endif  // __DUMP_STATE__
 `ifdef PRETTY_WAVETRACE
   // verilator lint_off UNUSEDSIGNAL
-  word zero, ra, sp, gp, tp;
-  word t0, t1, t2, t3, t4, t5, t6;
-  word s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;
-  word a0, a1, a2, a3, a4, a5, a6, a7;
+  uint32_t zero, ra, sp, gp, tp;
+  uint32_t t0, t1, t2, t3, t4, t5, t6;
+  uint32_t s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;
+  uint32_t a0, a1, a2, a3, a4, a5, a6, a7;
   assign zero = regs[0];
   assign ra   = regs[1];
   assign sp   = regs[2];
@@ -80,7 +80,7 @@ module RegisterFile
   // verilator lint_on UNUSEDSIGNAL
 `endif
 
-  task automatic set_registers(word values[32]);
+  task automatic set_registers(uint32_t values[32]);
     regs = values;
   endtask
 endmodule

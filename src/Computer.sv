@@ -3,26 +3,26 @@
 module Computer ();
   import Types::*;
 
-  localparam TIMEOUT = 1s;
+  localparam TIMEOUT = 0.01ms;
   localparam DELAY_ONE_PERCENT = TIMEOUT / 100;
 
   bit clk, rst;
-  word debug_current_pc, debug_instruction, debug_wait;
+  uint32_t debug_current_pc, debug_instruction, debug_registers[32];
+  bit debug_wait = 0;
 
   AvalonMmRead ibus ();
   AvalonMmRw dbus ();
-  AvalonMmRw bus ();
   DualPortedMem #(
       .SIZE(8 * 1024)
   ) memory (
       .clk(clk),
-      .rw_bus(dbus.Agent),
-      .ro_bus(ibus.Agent)
+      .rw_bus(dbus),
+      .ro_bus(ibus)
   );
 
   Cpu cpu (
-      .instruction_manager(ibus.Host),
-      .data_manager(dbus.Host),
+      .instruction_manager(ibus),
+      .data_manager(dbus),
       .*
   );
 
@@ -56,7 +56,7 @@ module Computer ();
   end
 
   final begin
-    $display("Simulation finished at %0t", $time);
+    $display("Simulation finished at %t", $time);
     memory.dump_content("logs/ram.bin");
   end
 

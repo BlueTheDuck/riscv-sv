@@ -100,13 +100,13 @@ module Cpu
 
       .debug_registers(debug_registers)
   );
-  always_comb begin : ALU_INPUT_A_MUX
+  always_comb begin : ALU_INPUT_A_SELECTOR
     unique case (data_path.alu_in_a)
       ALU_IN_A_REG: alu_in_a = rs1_out;
       ALU_IN_A_PC:  alu_in_a = current_pc;
     endcase
   end
-  always_comb begin : ALU_INPUT_B_MUX
+  always_comb begin : ALU_INPUT_B_SELECTOR
     unique case (data_path.alu_in_b)
       ALU_IN_B_REG: alu_in_b = rs2_out;
       ALU_IN_B_IMM: alu_in_b = instruction_immediate;
@@ -119,7 +119,7 @@ module Cpu
       .out (alu_out)
   );
 
-  always_comb begin : DEST_REG_MUX
+  always_comb begin : DEST_REG_DATA_SELECTOR
     unique case (data_path.dest_reg_from)
       DEST_REG_FROM_NONE: rd_in = 0;
       DEST_REG_FROM_ALU:  rd_in = alu_out;
@@ -128,7 +128,7 @@ module Cpu
     endcase
   end
 
-  always_comb begin : PC_STEP_MUX
+  always_comb begin : PC_STEP_SELECTOR
     var bit take_branch;
     take_branch = !(alu_out == 0) ^ invert_logic_result;
     if (take_branch && branch) begin
@@ -174,10 +174,10 @@ module Cpu
     end
   end
 
-  assign debug_current_pc = current_pc;
+  assign debug_current_pc  = current_pc;
   assign debug_instruction = ir;
 
-  function word swap_endianness(input word idata);
+  function uint32_t swap_endianness(input uint32_t idata);
     return {idata[7:0], idata[15:8], idata[23:16], idata[31:24]};
   endfunction
 
@@ -192,7 +192,7 @@ module Cpu
   endtask
 `endif  // __DUMP_STATE__
 
-  task automatic execute_opcode(word opcode);
+  task automatic execute_opcode(uint32_t opcode);
     $display("[%4t] execute_opcode(%08x)", $time, opcode);
     ir <= opcode;
     imu.simulate_ready(opcode);

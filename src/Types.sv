@@ -1,5 +1,4 @@
 package Types;
-  typedef bit [31:0] word;
   typedef logic [31:0] tri32_t;
   typedef bit unsigned [31:0] uint32_t;
   typedef bit signed [31:0] int32_t;

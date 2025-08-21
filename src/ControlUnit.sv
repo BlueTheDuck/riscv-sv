@@ -12,7 +12,7 @@ module ControlUnit
     output data_path_map_t data_path,
     output alu_mode_t alu_mode,
     output bit invert_logic_result,
-  
+
     output bit fetch_next_instruction,
     output bit load_ir,
     output bit increment_pc,
@@ -22,7 +22,7 @@ module ControlUnit
     output bit load_rd,
     output bit branching,
 
-    input  bit debug_wait
+    input bit debug_wait
 );
   localparam data_path_map_t null_cu = '{
       alu_in_a: ALU_IN_A_REG,

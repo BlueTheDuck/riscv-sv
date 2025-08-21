@@ -4,3 +4,8 @@ tags
 *.vcd
 *.bin
 *.hexdump
+*.elf
+*.hex
+*.o
+*.bak
+__pycache__
