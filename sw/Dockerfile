@@ -13,20 +13,13 @@ RUN apt-get install -y \
     libmpc-dev libmpfr-dev libgmp-dev gawk \
     build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev ninja-build cmake libglib2.0-dev libslirp-dev
 
-RUN git clone --branch 2025.05.22 https://github.com/riscv-collab/riscv-gnu-toolchain.git /opt/riscv-gnu-toolchain/ 
+RUN apt-get install -y distcc
 
 WORKDIR /opt/riscv-gnu-toolchain/
 
-# Pre-initialize submodules so that Docker caches them
-RUN git submodule update --init --recursive --jobs $(nproc) -- \
-      binutils \
-      gcc \
-      gdb \
-      glibc \
-      newlib
+ADD ./riscv-gnu-toolchain .
 
-RUN ./configure --prefix=/opt/riscv --with-arch=rv32gc --with-abi=ilp32 --with-languages=c,c++
-RUN make -j$(nproc)
-# Uncomment to build gcc for Linux userspace
-# RUN make linux -j$(nproc)
-RUN find /opt/riscv -type f -executable -exec strip --strip-all '{}' 2>/dev/null \;
+ADD entry.sh entry.sh
+RUN chmod +x entry.sh
+
+ENTRYPOINT ["/opt/riscv-gnu-toolchain/entry.sh"]
