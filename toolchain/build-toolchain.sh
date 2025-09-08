@@ -20,17 +20,20 @@ git -C riscv-gnu-toolchain submodule update --init --recursive --jobs $(nproc) -
 
 echo Building dev environment
 
+touch config.cache
+
 docker build -t rv32:${TAG} .
 
 echo Running build
 
 CONTAINER_ID=$(docker run -d rv32:${TAG})
-# wait until container finishes
-docker wait ${CONTAINER_ID}
+echo Waiting for container ${CONTAINER_ID} to finish
+docker attach ${CONTAINER_ID}
 
 echo Copying toolchain to host
 
-docker cp ${CONTAINER_ID}:/opt/riscv/ $(pwd)/opt/
+docker cp ${CONTAINER_ID}:/opt/riscv/ /opt/
+docker cp ${CONTAINER_ID}:/opt/riscv-gnu-toolchain/config.cache config.cache
 docker rm -f ${CONTAINER_ID}
 echo "Toolchain built and copied to /opt/riscv"
 echo "Run 'docker rmi rv32:${TAG}' to remove the image if no longer needed."

@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1-labs
+
 FROM debian:bookworm-slim AS build
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -17,9 +19,12 @@ RUN apt-get install -y distcc
 
 WORKDIR /opt/riscv-gnu-toolchain/
 
-ADD ./riscv-gnu-toolchain .
+ADD \
+    --exclude=.git --exclude=.gitignore --exclude=.github \
+    ./riscv-gnu-toolchain .
 
-ADD entry.sh entry.sh
-RUN chmod +x entry.sh
+ADD config.cache .
 
-ENTRYPOINT ["/opt/riscv-gnu-toolchain/entry.sh"]
+ADD --chmod=755 entry.sh entry.sh
+
+CMD ["/opt/riscv-gnu-toolchain/entry.sh"]
