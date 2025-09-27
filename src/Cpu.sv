@@ -124,7 +124,7 @@ module Cpu
       DEST_REG_FROM_NONE: rd_in = 0;
       DEST_REG_FROM_ALU:  rd_in = alu_out;
       DEST_REG_FROM_MEM:  rd_in = data_from_bus;
-      DEST_REG_FROM_PC:   rd_in = next_pc;
+      DEST_REG_FROM_PC:   rd_in = current_pc + instruction_len;
     endcase
   end
 
