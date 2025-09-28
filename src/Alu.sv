@@ -16,18 +16,15 @@ module Alu
       ALU_ADD:  out = in_a + in_b;
       ALU_SUB:  out = in_a - in_b;
       ALU_SHIFT_LEFT: begin
-        if (mode.signedness == UNSIGNED) out = in_a << displacement;
-        else begin
-          out = 0;  // Latch prevention
-          $fatal("ALU_SHIFT_LEFT arithmetic (signed) is not supported");
-        end
+        if (mode.is_signed) out = 0;  // Latch prevention
+        else out = in_a << displacement;
       end
       ALU_SHIFT_RIGHT: begin
-        if (mode.signedness == UNSIGNED) out = unsigned'(in_a) >> displacement;
-        else out = signed'(in_a) >>> displacement;
+        if (mode.is_signed) out = signed'(in_a) >>> displacement;
+        else out = unsigned'(in_a) >> displacement;
       end
       ALU_SET_LESS_THAN: begin
-        if (mode.signedness == SIGNED) out = signed'(in_a) < signed'(in_b) ? 1 : 0;
+        if (mode.is_signed) out = signed'(in_a) < signed'(in_b) ? 1 : 0;
         else out = unsigned'(in_a) < unsigned'(in_b) ? 1 : 0;
       end
       ALU_XOR:  out = in_a ^ in_b;

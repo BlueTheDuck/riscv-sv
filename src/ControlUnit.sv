@@ -157,7 +157,7 @@ module ControlUnit
   always_comb begin : ALU_OP_DECODER
 
     // Latch prevention
-    alu_mode = '{operation: ALU_NULL, signedness: UNSIGNED};
+    alu_mode = '{operation: ALU_NULL, is_signed: 0};
     invert_logic_result = 0;
 
     if (data_path.alu_op_from == ALU_OP_FIXED_ADD) begin
@@ -167,14 +167,14 @@ module ControlUnit
         0:
         if (opcode == OP_ALU && f7 == 'h20) alu_mode.operation = ALU_SUB;
         else alu_mode.operation = ALU_ADD;
-        1: alu_mode = '{operation: ALU_SHIFT_LEFT, signedness: UNSIGNED};
-        2: alu_mode = '{operation: ALU_SET_LESS_THAN, signedness: SIGNED};
-        3: alu_mode = '{operation: ALU_SET_LESS_THAN, signedness: UNSIGNED};
+        1: alu_mode = '{operation: ALU_SHIFT_LEFT, is_signed: 0};
+        2: alu_mode = '{operation: ALU_SET_LESS_THAN, is_signed: 1};
+        3: alu_mode = '{operation: ALU_SET_LESS_THAN, is_signed: 0};
         4: alu_mode.operation = ALU_XOR;
         5:
         priority casez (f7)
-          7'b00?????: alu_mode = '{operation: ALU_SHIFT_RIGHT, signedness: UNSIGNED};
-          7'b01?????: alu_mode = '{operation: ALU_SHIFT_RIGHT, signedness: SIGNED};
+          7'b00?????: alu_mode = '{operation: ALU_SHIFT_RIGHT, is_signed: 0};
+          7'b01?????: alu_mode = '{operation: ALU_SHIFT_RIGHT, is_signed: 1};
           default: $fatal;
         endcase
         6: alu_mode.operation = ALU_OR;
@@ -184,7 +184,7 @@ module ControlUnit
       if (comp_op.mode == 1'b0) begin
         alu_mode.operation = ALU_EQ;
       end else begin
-        alu_mode = '{operation: ALU_SET_LESS_THAN, signedness: comp_op.signedness};
+        alu_mode = '{operation: ALU_SET_LESS_THAN, is_signed: comp_op.is_signed};
       end
       invert_logic_result = comp_op.negate;
     end else $fatal;

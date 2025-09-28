@@ -17,16 +17,16 @@ module RegisterFile
 );
   uint32_t regs[32];
 
-  assign rs1_out = regs[rs1_index];
-  assign rs2_out = regs[rs2_index];
+  assign rs1_out = rs1_index ? regs[rs1_index] : 0;
+  assign rs2_out = rs2_index ? regs[rs2_index] : 0;
 
   assign debug_registers = regs;
 
   always_ff @(negedge clk) begin
+    regs[rd_index] <= regs[rd_index];
+
     if (rd_we) begin
-      regs[rd_index] <= rd_index == 0 ? 0 : rd_in;
-    end else begin
-      regs[rd_index] <= regs[rd_index];
+      regs[rd_index] <= rd_index ? rd_in : 0;
     end
   end
 

@@ -9,11 +9,6 @@ package Types;
     INT_SIZE_WORD = 2'd2
   } int_size_t;
 
-  typedef enum bit {
-    UNSIGNED,
-    SIGNED
-  } signedness_t;
-
   typedef enum bit [6:0] {
     OP_ALU    = 7'b0110011,
     OP_ALUI   = 7'b0010011,
@@ -40,12 +35,12 @@ package Types;
   } alu_op_t;
   typedef struct packed {
     alu_op_t operation;
-    signedness_t signedness;
+    bit is_signed;
   } alu_mode_t;
 
   typedef struct packed {
     bit mode;
-    signedness_t signedness;
+    bit is_signed;
     bit negate;
   } comparison_op_t;
 
