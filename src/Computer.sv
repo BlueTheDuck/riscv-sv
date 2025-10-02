@@ -56,8 +56,14 @@ module Computer ();
   end
 
   final begin
+    var string memory_dump_file;
     $display("Simulation finished at %t", $time);
-    memory.dump_content("logs/ram.bin");
+    $value$plusargs("DUMP_FILE=%s", memory_dump_file);
+    if (memory_dump_file == "") begin
+      memory.dump_content("logs/ram.bin");
+    end else begin
+      memory.dump_content(memory_dump_file);
+    end
   end
 
 
