@@ -24,7 +24,7 @@ typedef struct packed {
   bit imm11;
   bit [6:0] op;
 } op_b_t;
-function automatic op_b_t op_b(bit [6:0] op, bit [2:0] f3, bit [4:0] rs1, bit [4:0] rs2, word imm);
+function automatic op_b_t op_b(bit [6:0] op, bit [2:0] f3, bit [4:0] rs1, bit [4:0] rs2, uint32_t imm);
   return op_b_t'{
       imm12: imm[12],
       imm11: imm[11],
