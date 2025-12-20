@@ -30,14 +30,14 @@ main.o: C_FLAGS += -O1
 main.elf: $(OBJS)
 	$(LD) $^ $(LD_FLAGS) -o $@
 
-hexdump: main.elf
-	$(OBJDUMP) -d $<
-	$(OBJDUMP) -t $<
-.PHONY: hexdump
+%.hexdump: %.elf
+	rm $@
+	$(OBJDUMP) -d $< >> $@
+	$(OBJDUMP) -t $< >> $@
 
 %.bin: %.elf
 	$(OBJCOPY) -Obinary $< $@
 
 clean:
-	-rm main *.o *.bin *.dmp *.dmp.txt *.elf
+	-rm main *.o *.bin *.dmp *.dmp.txt *.elf *.d *.hex *.map
 .PHONY: clean
