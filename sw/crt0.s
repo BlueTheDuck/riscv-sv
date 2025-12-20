@@ -18,7 +18,7 @@ _start:
   la a5, _bss_start
   la a4, _bss_end
 1:
-  beq  a5, a4, call_main
+  beq  a5, a4, .call_main
   sw   zero, 0(a5)
   addi a5, a5, 4
   bne  a5, a4, 1b
