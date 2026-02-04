@@ -9,4 +9,4 @@
 make -j$(nproc)
 # Uncomment to build gcc for Linux userspace
 # make linux -j$(nproc)
-find /opt/riscv -type f -executable -exec strip --strip-all '{}' 2>/dev/null \;
+find /opt/riscv/bin -type f -exec sh -c "file '{}' | grep -qo ELF" \; -and -print0 | xargs -0 strip --strip-all

@@ -26,7 +26,12 @@ docker build -t rv32:${TAG} .
 
 echo Running build
 
-CONTAINER_ID=$(docker run -d rv32:${TAG})
+CONTAINER_ID=$(docker run \
+    --env-file .env \
+    -e CCACHE_DIR=/tmp/ccache \
+    --mount type=volume,src=riscv-gnu-toolchain-ccache,dst=/tmp/ccache \
+    -d --rm \
+    rv32:${TAG} || exit -1)
 echo Waiting for container ${CONTAINER_ID} to finish
 docker attach ${CONTAINER_ID}
 

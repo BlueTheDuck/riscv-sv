@@ -15,7 +15,7 @@ RUN apt-get install -y \
     libmpc-dev libmpfr-dev libgmp-dev gawk \
     build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev ninja-build cmake libglib2.0-dev libslirp-dev
 
-RUN apt-get install -y distcc
+RUN apt-get install -y sccache ccache distcc distcc-pump
 
 WORKDIR /opt/riscv-gnu-toolchain/
 
@@ -26,5 +26,7 @@ ADD \
 ADD config.cache .
 
 ADD --chmod=755 entry.sh entry.sh
+
+ENV PATH=/usr/lib/ccache:${PATH}
 
 CMD ["/opt/riscv-gnu-toolchain/entry.sh"]
