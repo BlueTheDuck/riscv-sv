@@ -1,11 +1,13 @@
 .DEFAULT: run
 
 TOP := Computer
-VERILATOR_ARGS :=	+1800-2017ext+sv -sv --trace --relative-includes --timing \
+VERILATOR_ARGS :=	\
+				+1800-2017ext+sv -sv --relative-includes --timing \
 				+incdir+./src -y src \
  				--cc --exe --binary \
-        --x-assign unique --x-initial unique \
+				--x-assign unique --x-initial unique \
 				--assert -Wall -Wno-fatal -Wpedantic -Wwarn-lint -Wwarn-style -Wno-VARHIDDEN \
+				--trace --trace-fst --trace-structs  \
 				-j 0
 SRCS := $(wildcard src/*.sv)
 MODULES := src/Types.sv

@@ -2,6 +2,7 @@ a.out
 obj_dir
 tags
 *.vcd
+*.fst
 *.bin
 *.hexdump
 *.elf

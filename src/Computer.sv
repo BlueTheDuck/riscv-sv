@@ -47,7 +47,7 @@ module Computer ();
     end
     memory.load_content(memory_init_file);
 
-    $dumpfile("logs/computer.vcd");
+    $dumpfile("logs/computer.fst");
     $dumpvars(0, Computer);
     fork
       do_test();
